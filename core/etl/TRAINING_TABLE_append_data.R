@@ -19,28 +19,29 @@ library(dplyr)
 library(raster)
 
 # OPEN FILE WITH PM STATIONS INFORMATION 
-pm.data=read.table('/media/lara/Blue/2020/CONAE/EMPATIA/estaciones_PM10.csv', sep=';',dec='.',header=TRUE) # TABLE WITH GORUND-BASED PM STATIONS INFORMATION (I.E LOCATION)
+pm.data=read.table('E:/2020/CONAE/EMPATIA/estaciones_PM10.csv', sep=';',dec='.',header=TRUE) # TABLE WITH GORUND-BASED PM STATIONS INFORMATION (I.E LOCATION)
 pm.data$ID=as.character(pm.data$ID) # NAME OF STATIONS
 coordenadas=cbind(pm.data$LON,pm.data$LAT) # LAT LON LOCATION OF STATION
 
 # OPEN CSV FILE WHERE MERRA2 DATA WILL BE SAVED (CONSIDERING MAIAC/MODIS OVERPASS TIME)
-tabla_entrenamiento=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019.csv',sep=',',dec='.',header=TRUE)
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC.csv',sep=';',dec='.',header=TRUE)
 tabla_entrenamiento=as.data.frame(tabla_entrenamiento)  
 cname=colnames(tabla_entrenamiento) # NAME OF COLUMNS CORRESPOND TO DIFFERENT VARIABLES (I.E MERRA2 VARIABLES)
 
 #OPEN TABLE WITH DATE-TIME AND FILENAME OF MERRA DOWNLOADED FILES (pack 1 to 3)
-merra_info_1_3=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/MERRA2_DATE-TIME_filename_1-3.csv',sep=',',dec='.',header=TRUE)
+merra_info_1_3=read.csv('E:/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/MERRA2_DATE-TIME_filename_1-3.csv',sep=',',dec='.',header=TRUE)
 merra_info_1_3=as.data.frame(merra_info_1_3)
 
-merra_info_4=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/MERRA2_DATE-TIME_filename_4.csv',sep=',',dec='.',header=TRUE)
+merra_info_4=read.csv('E:/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/MERRA2_DATE-TIME_filename_4.csv',sep=',',dec='.',header=TRUE)
 merra_info_4=as.data.frame(merra_info_4)
 
 # CHANGE INFO TO DATE-TIME FORMAT
-dates=ymd_hms(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.)
+dates=as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.,format="%d/%m/%Y %H:%M", tz='UTC')
 dates_maiac=unique(dates) # UNIQUE IS APPLY BECAUSE DATES ARE REPEATED FOR PM STATIONS AND AOD 470 AND 500 NM FILES
 
-date_time_MERRA_1_3=ymd_hms(merra_info_1_3$fecha)
-date_time_MERRA_4=ymd_hms(merra_info_4$fecha)
+
+date_time_MERRA_1_3=as.POSIXct(merra_info_1_3$fecha,format="%Y-%m-%d %H:%M:%S", tz='UTC')
+date_time_MERRA_4=as.POSIXct(merra_info_4$fecha,format="%Y-%m-%d %H:%M:%S", tz='UTC')
 
 # FOR EACH DATE-TIME OF MAIAC DATA WE GET MERRA2 VARIABLE VALUES FOR EACH PM STATION CORRESPONDING PIXEL 
 for (k0 in 1:length(dates_maiac)){
@@ -56,7 +57,7 @@ for (k0 in 1:length(dates_maiac)){
       # OPEN EACH MERRA VARIABLE FILE AND GET PIXEL VALUE FOR PM STATIONS
       for (k1 in 1:nrow(merra_files_1_3)){
     
-        filename=paste('/media/lara/Blue/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/BUE-0',merra_files_1_3$k0[k1],'/',merra_files_1_3$files[k1],sep='')
+        filename=paste('E:/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/BUE-0',merra_files_1_3$k0[k1],'/',merra_files_1_3$files[k1],sep='')
    
         raster_merra=raster(filename)
     
@@ -75,10 +76,10 @@ for (k0 in 1:length(dates_maiac)){
              posicion=maiac_index[which(tabla_entrenamiento$estacion_pm[maiac_index]==valores_merra[k2,2])]
              tabla_entrenamiento[posicion,cvalue]=valores_merra[k2,1]
     
-        }#cierro k2
+         }#cierro k2
     
       }# cierro k1
-  
+     
   
 ###### MERRA-2 PACK VARIABLES 4    (TIME INTERVALS ARE DIFFERENT FROM 1 TO 3 MERRA-2 PRODUCTS, THATS WHY IS DONE SEPARATELY)
   
@@ -90,7 +91,7 @@ for (k0 in 1:length(dates_maiac)){
   # OPEN EACH MERRA VARIABLE FILE AND GET PIXEL VALUE FOR PM STATIONS
   for (k3 in 1:nrow(merra_files_4)){
     
-    filename=paste('/media/lara/Blue/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/BUE-0',merra_files_4$k0[k3],'/',merra_files_4$files[k3],sep='')
+    filename=paste('E:/2020/CONAE/EMPATIA/MERRA-2/GEOTIFF/BUE-0',merra_files_4$k0[k3],'/',merra_files_4$files[k3],sep='')
     
     raster_merra=raster(filename)
     
@@ -115,14 +116,13 @@ for (k0 in 1:length(dates_maiac)){
   
   t_save=tabla_entrenamiento[maiac_index,]
   
-  write.table(t_save, file='/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA.csv', append = T, 
-               sep=',', row.names=F,col.names = cname)
+  write.table(t_save, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA.csv', append = T, 
+               sep=',', row.names=F, col.names = FALSE)
   
+  print(length(dates_maiac) - k0) 
+
 } #cierro k0
   
-  
-
-
 
 ###################################################################################################
 #################           APPEND VIIRS DATA TO TRAINING TABLE           #########################
@@ -131,34 +131,34 @@ rm( list = ls() )
 
 library(lubridate)
 
-viirs_data=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/VIIRS/LAADS/VIIRS_pixel_data_pm_stations_2012-2019.csv',sep=',',dec='.',header=TRUE)
+viirs_data=read.csv('E:/2020/CONAE/EMPATIA/VIIRS/LAADS/VIIRS_pixel_data_pm_stations_2012-2019.csv',sep=',',dec='.',header=TRUE)
 
-tabla_entrenamiento=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA.csv',sep=',',dec='.',header=TRUE)
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA.csv',sep=';',dec='.',header=TRUE)
 
-years=year(ymd_hms(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.))
+years=year(as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss., format="%d/%m/%Y %H:%M", tz='UTC'))
 
 # FOR 2010-2011 & 2012 VIIRS VALUE FOR EACH STATION CORRESPONDS TO 2012 APR-JUN MEAN
 estacion=unique(viirs_data$estacion)
 for (k0 in 1:length(estacion)){
-  viirs_index=which(viirs_data$año==2012 & viirs_data$estacion==estacion[k0])
+  viirs_index=which(viirs_data$aÃ.o ==2012 & viirs_data$estacion==estacion[k0])
   viirs_value=viirs_data$valor_VIIRS[viirs_index]
   
-  train_index= which(year(ymd_hms(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.))<=2012 & tabla_entrenamiento$estacion_pm==estacion[k0])
+  train_index= which(years<=2012 & tabla_entrenamiento$estacion_pm==estacion[k0])
   tabla_entrenamiento$VIIRS_night_lights[train_index]=viirs_value
 }
 
 #FOR 2013 TO 2019 VIIRS VALUE FOR EACH STATION CORRESPONDS TO EACH YEAR'S APR-JUN MEAN
 for (y in 2013:2019){
 for (k1 in 1:length(estacion)){
-  viirs_index=which(viirs_data$año==y & viirs_data$estacion==estacion[k1])
+  viirs_index=which(viirs_data$aÃ.o==y & viirs_data$estacion==estacion[k1])
   viirs_value=viirs_data$valor_VIIRS[viirs_index]
   
-  train_index= which(year(ymd_hms(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.))==y & tabla_entrenamiento$estacion_pm==estacion[k1])
+  train_index= which(years==y & tabla_entrenamiento$estacion_pm==estacion[k1])
   tabla_entrenamiento$VIIRS_night_lights[train_index]=viirs_value
 }
 }
 
-write.table(tabla_entrenamiento, file='/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA_VIIRS.csv', append = T, 
+write.table(tabla_entrenamiento, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS.csv', append = T, 
             sep=',', row.names=F)
 
 
@@ -169,31 +169,28 @@ write.table(tabla_entrenamiento, file='/media/lara/Blue/2020/CONAE/EMPATIA/TABLA
 
 rm( list = ls() )
 
-tabla_entrenamiento=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA_VIIRS.csv',sep=',',dec='.',header=TRUE)
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS.csv',sep=',',dec='.',header=TRUE)
 
-dem_data=read.csv('/media/lara/Blue/2020/CONAE/EMPATIA/USGS/DEM_pixel_data_pm_stations.csv',sep=',',dec='.',header=TRUE)
+dem_data=read.csv('E:/2020/CONAE/EMPATIA/USGS/DEM_pixel_data_pm_stations.csv',sep=',',dec='.',header=TRUE)
 
 for (k0 in 1:length(dem_data$estacion)){
   train_index= which(tabla_entrenamiento$estacion_pm==dem_data$estacion[k0])
   tabla_entrenamiento$DEM_asnm[train_index]=dem_data$valor_DEM_asnm[k0]
 }  
   
-write.table(tabla_entrenamiento, file='/media/lara/Blue/2020/CONAE/EMPATIA/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA_VIIRS_DEM.csv', 
+write.table(tabla_entrenamiento, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM.csv', 
             sep=',', row.names=F)
 
   
-
-
-
 ###################################################################################################
 #################           APPEND PM10    DATA TO TRAINING TABLE         #########################
 ###################################################################################################
 
 rm( list = ls() )
 
-tabla_pm=read.csv('D:/EMPATIA/PM/PM_ACUMAR_y_APRA_PREPROCESADO.csv', sep=',', dec='.',header=TRUE)
+tabla_pm=read.csv('D:/EMPATIA/PM/PM_ACUMAR_y_APRAconvenio_PREPROCESADO.csv', sep=',', dec='.',header=TRUE)
 
-tabla_entrenamiento=read.csv('D:/EMPATIA/PM/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA_VIIRS_DEM.csv',sep=',',dec='.',header=TRUE)
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM.csv',sep=',',dec='.',header=TRUE)
 
 # PM CHANGE DATE-TIME FORMAT AND CONVERT TO UTC (MAIAC DATA ARE IN UTC)
 date_time_pm=as.POSIXct(tabla_pm$fecha,format="%Y-%m-%d %H:%M:%S")
@@ -208,7 +205,7 @@ columna_pm_valor=c()
 columna_fechas_control=c()
 for (k0 in 1:nrow(tabla_entrenamiento)){
    
-  fecha_fila=as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.[k0],format="%Y-%m-%d %H:%M:%S",tz="UTC")
+  fecha_fila=as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.[k0],format="%d/%m/%Y %H:%M",tz="UTC")
   
   st_fila=tabla_entrenamiento$estacion_pm[k0]
   
@@ -242,5 +239,5 @@ tabla_final=cbind(tabla_entrenamiento[,1:5],columna_pm_valor[,1],tabla_entrenami
 
 colnames(tabla_final)[6] <- "PM10_valor"
 
-write.table(tabla_final, file='D:/EMPATIA/PM/TABLA_ENTRENAMIENTO_2010-2019_MAIAC_MERRA_VIIRS_DEM_PM.csv', 
+write.table(tabla_final, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio.csv', 
             sep=',', row.names=F)
