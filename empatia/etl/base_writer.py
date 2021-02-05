@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 import attr
-from empatia.settings.log import logger, timed
+
+from empatia.settings.log import timed
 
 
 @attr.s
