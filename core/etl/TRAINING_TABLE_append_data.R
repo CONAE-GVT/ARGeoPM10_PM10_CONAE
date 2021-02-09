@@ -241,3 +241,116 @@ colnames(tabla_final)[6] <- "PM10_valor"
 
 write.table(tabla_final, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio.csv', 
             sep=',', row.names=F)
+
+
+
+###################################################################################################
+#################           APPEND PM10 BAHIA BLANCA -estacion I -  DATA TO TRAINING TABLE         #########################
+###################################################################################################
+
+rm( list = ls() )
+
+tabla_pm=read.csv('D:/EMPATIA/BahiaBlanca/PM10_MediaMovil_24hs_BahiaBlanca_2010-2018.csv', sep=',', dec='.',header=TRUE)
+
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio.csv',sep=',',dec='.',header=TRUE)
+
+# PM CHANGE DATE-TIME FORMAT AND CONVERT TO UTC (MAIAC DATA ARE IN UTC)
+date_time_pm=as.POSIXct(tabla_pm$Fecha,format="%Y-%m-%d %H:%M:%S")
+attr(date_time_pm, "tzone") <- "UTC" 
+
+y_pm=year(date_time_pm)
+m_pm=month(date_time_pm)
+d_pm=day(date_time_pm)
+
+indice=which(tabla_entrenamiento$estacion_pm=='BB1')
+
+
+
+for (k0 in 1:length(indice)){
+  fecha_fila=as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.[indice[k0]],format="%d/%m/%Y %H:%M",tz="UTC")
+  
+  
+  st_fila=tabla_entrenamiento$estacion_pm[indice[k0]]
+  
+  index= which(y_pm==year(fecha_fila) & m_pm==month(fecha_fila) & d_pm==day(fecha_fila))
+  
+  if (length(index)==0){
+    valor_pm=NA
+    fila_date=cbind(fecha_fila,'no hay date_time_pm','no hay fecha en tabla_pm')
+    tabla_entrenamiento$PM10_valor[indice[k0]]=valor_pm
+    
+  }else{
+    fechas_Seleccion= date_time_pm[index]
+    
+    dif_tiempo=difftime(fecha_fila, fechas_Seleccion, 'minutes')
+    min_time_dif=which.min(abs(dif_tiempo))
+    
+    valor_pm=tabla_pm$PM10[index[min_time_dif]]
+    tabla_entrenamiento$PM10_valor[indice[k0]]=valor_pm
+    
+    #fila_date=cbind(fecha_fila,date_time_pm[index[min_time_dif]],tabla_pm$Fecha[index[min_time_dif]])
+    
+  }
+  
+   print(length(indice)-k0)
+  
+}
+
+write.table( tabla_entrenamiento, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio_BahiaBlanca.csv', 
+            sep=',', row.names=F)
+
+
+###################################################################################################
+#################           APPEND PM10 BAHIA BLANCA -estacion II -  DATA TO TRAINING TABLE         #########################
+###################################################################################################
+
+rm( list = ls() )
+
+tabla_pm=read.csv('D:/EMPATIA/BahiaBlanca/PM10_MediaMovil_24hs_BahiaBlanca_EII_2017-2018.csv', sep=',', dec='.',header=TRUE)
+
+tabla_entrenamiento=read.csv('E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio_BahiaBlanca.csv',sep=',',dec='.',header=TRUE)
+
+# PM CHANGE DATE-TIME FORMAT AND CONVERT TO UTC (MAIAC DATA ARE IN UTC)
+date_time_pm=as.POSIXct(tabla_pm$Fecha,format="%Y-%m-%d %H:%M:%S")
+attr(date_time_pm, "tzone") <- "UTC" 
+
+y_pm=year(date_time_pm)
+m_pm=month(date_time_pm)
+d_pm=day(date_time_pm)
+
+indice=which(tabla_entrenamiento$estacion_pm=='BB2')
+
+for (k0 in 1:length(indice)){
+  fecha_fila=as.POSIXct(tabla_entrenamiento$Fecha_Hora..yyyy.mm.dd.hh.mm.ss.[indice[k0]],format="%d/%m/%Y %H:%M",tz="UTC")
+  
+  st_fila=tabla_entrenamiento$estacion_pm[indice[k0]]
+  
+  index= which(y_pm==year(fecha_fila) & m_pm==month(fecha_fila) & d_pm==day(fecha_fila))
+  
+  if (length(index)==0){
+    valor_pm=NA
+    fila_date=cbind(fecha_fila,'no hay date_time_pm','no hay fecha en tabla_pm')
+    tabla_entrenamiento$PM10_valor[indice[k0]]=valor_pm
+    
+  }else{
+    fechas_Seleccion= date_time_pm[index]
+    
+    dif_tiempo=difftime(fecha_fila, fechas_Seleccion, 'minutes')
+    min_time_dif=which.min(abs(dif_tiempo))
+    
+    valor_pm=tabla_pm$PM10[index[min_time_dif]]
+    tabla_entrenamiento$PM10_valor[indice[k0]]=valor_pm
+    
+    #fila_date=cbind(fecha_fila,date_time_pm[index[min_time_dif]],tabla_pm$Fecha[index[min_time_dif]])
+    
+  }
+  
+  print(length(indice)-k0)
+  
+}
+
+write.table( tabla_entrenamiento, file='E:/2020/CONAE/EMPATIA/Tabla_Entrenamiento/Tabla_Entrenamiento_MAIAC_MERRA_VIIRS_DEM_PMconvenio_BahiaBlancaIyII.csv', 
+             sep=',', row.names=F)
+
+
+
