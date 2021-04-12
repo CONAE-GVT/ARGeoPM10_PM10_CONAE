@@ -6,11 +6,17 @@ setup(
     description="Support system for decision making in air quality management",
     author="CONAE-Empatia team",
     author_email="",
-    classifiers=["Programming Language :: Python :: 3.7"],
+    classifiers=["Programming Language :: Python :: 3.8"],
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
         "Click",
+        "modapsclient",
+        "numpy",
+        "pandas",
+        "requests",
+        "scikit-learn",
+        "tqdm",
     ],
     entry_points="""
         [console_scripts]

@@ -4,10 +4,10 @@ import time
 from datetime import datetime
 from functools import wraps
 from logging.config import dictConfig
-from typing import Any
 from pathlib import Path
-from empatia.settings import BASE_PATH
+from typing import Any
 
+from empatia.settings import BASE_PATH
 
 LOG_FILENAME = f"empatia_model_{datetime.now().strftime('%Y_%m_%d_%H_%M')}.log"
 LOCAL_LOG_DIR = Path(BASE_PATH) / "log"
@@ -55,6 +55,7 @@ LOGGING = {
 
 dictConfig(LOGGING)
 logger = logging.getLogger("empatia")
+
 
 def timed(func: Any) -> Any:
     """This decorator prints the execution time for the decorated function."""

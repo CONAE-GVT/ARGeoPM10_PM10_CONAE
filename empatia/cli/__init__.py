@@ -2,16 +2,17 @@
     Empatia command line interface module.
 """
 
+from typing import List
+
 import click
-import os
-from pathlib import Path
+
 from empatia.etl.merra_data_source import get_merra_files
 from empatia.etl.modis_data_source import get_modis_files
-from typing import List
-from empatia.settings.log import logger
 
 
-@click.group(help="Empatia: Support system for decision making in air quality management")
+@click.group(
+    help="Empatia: Support system for decision making in air quality management"
+)
 def main() -> None:
     """Empatia entry point script."""
 
@@ -29,21 +30,28 @@ def main() -> None:
 @click.argument("file_format", default="nc", type=str)
 def get_merra_files_entry_point(
     ds: str,
-    base_url: str, 
-    product: str, 
-    shortname: str, 
+    base_url: str,
+    product: str,
+    shortname: str,
     region: List[str],
-    start_hour: str, 
+    start_hour: str,
     end_hour: str,
     version: str,
     variables: List[str],
     file_format: str,
-    ) -> None:
+) -> None:
 
     get_merra_files(
-        ds, base_url, product, shortname,
-        region, start_hour, end_hour, version,
-        variables, file_format
+        ds,
+        base_url,
+        product,
+        shortname,
+        region,
+        start_hour,
+        end_hour,
+        version,
+        variables,
+        file_format,
     )
 
 
@@ -66,12 +74,9 @@ def get_modis_files_entry_point(
     west: int,
     start_date: str,
     end_date: str = None,
-    file_format: str = 'h5',
-    ) -> None:
+    file_format: str = "h5",
+) -> None:
 
     get_modis_files(
-        product, collection,
-        north, south, east, west,
-        start_date, end_date, file_format
-        )
-
+        product, collection, north, south, east, west, start_date, end_date, file_format
+    )

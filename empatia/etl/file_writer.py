@@ -1,5 +1,8 @@
 import os
+from typing import Any
+
 import attr
+
 from empatia.etl.base_writer import BaseWriter
 from empatia.exceptions import DirDoesntExists, FileExists
 
@@ -30,6 +33,6 @@ class FileWriter(BaseWriter):
         if os.path.exists(self.destination):
             raise FileExists(f"{self.destination} already exists.")
 
-    def write(self, data) -> None:
+    def write(self, data: Any) -> None:
         with open(self.destination, "wb") as f:
             f.write(data)
