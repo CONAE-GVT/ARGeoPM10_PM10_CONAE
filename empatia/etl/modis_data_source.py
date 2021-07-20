@@ -17,7 +17,10 @@ def get_modis_urls(
     west: float,
     start_date: str,
     end_date: str = None,
-) -> Tuple[List[str], List[str]]:
+) -> Tuple[List, List]:
+    """
+    Get uls of Modis products
+    """
 
     urls: List[str] = []
     fnames: List[Dict] = []
@@ -48,19 +51,19 @@ def get_modis_urls(
             collection=collection,
         )
 
-        for fn in files:
-            fnames.extend(mclient.getFileProperties(fn))
-            urls.extend(mclient.getFileUrls(fn))
+        if len(files) == 1:
+            raise ValueError(f"Data not found for range: {start_date}-{end_date}")
 
-        prod_names: List[str] = list(
-            map(lambda x: f"{product}_{x.get('fileName', '').split('.')[2]}", fnames)
-        )
+        for fn in files:
+            metadata = mclient.getFileProperties(fn)
+            fnames.extend([meta["fileName"] for meta in metadata])
+            urls.extend(mclient.getFileUrls(fn))
 
     except ValueError:
         logger.error(f"Invalid request to get files for {product}")
-        return prod_names, urls
+        return fnames, urls
 
-    return prod_names, urls
+    return fnames, urls
 
 
 def get_modis_files(
@@ -72,16 +75,21 @@ def get_modis_files(
     west: float,
     start_date: str,
     end_date: str = None,
-    file_format: str = "h5",
 ) -> None:
+    """
+    Download Modis products
+    """
 
     headers = {"Authorization": f"Bearer {NASA_TOKEN}"}
 
-    dst_path = (f"{MODIS_DATASET_PATH}/{product}/{start_date}/",)
+    dst_path = f"{MODIS_DATASET_PATH}/{product}/{start_date}/"
     logger.info(f"Get MODIS urls to download files for: {product}")
     fnames, urls = get_modis_urls(
         product, collection, north, south, east, west, start_date, end_date
     )
     logger.info(f"Downloading MODIS's files for: {product}")
     for fn, url in zip(fnames, urls):
-        get_data(url, f"{dst_path[0]}{fn}", file_format, headers=headers)
+        fn_splitted = fn.split(".")
+        fn = ".".join(fn_splitted[:-1])
+        file_format = fn_splitted[-1]
+        get_data(url, f"{dst_path}{fn}", file_format, headers=headers)

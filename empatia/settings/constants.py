@@ -1,15 +1,78 @@
 import datetime as dt
 
-DEFAULT_DATE = dt.datetime.now() - dt.timedelta(days=1)
+# Model
+SENSORS = ["Terra", "Aqua"]
+NODATA = -9999
+DEFAULT_FREQ = 470
+TARGET_COL = "PM10_valor"
+FEATURES_COLS = [
+    "ALBEDO",
+    "BCCMASS",
+    "CLDHGH",
+    "CLDLOW",
+    "DEM_asnm",
+    "valor_AOD",
+    "PBLH",
+    "PRECTOT",
+    "PS",
+    "RH",
+    "SPEEDMAX",
+    "SPEED",
+    "T",
+    "USTAR",
+    "U",
+    "V",
+    "VIIRS_night_lights",
+]
+
+# Products
+MONTHLY_PRODUCT_CODES = {"Aqua": "163000", "Terra": "133000"}
+
+BASE_METADATA_CODES = {
+    "id": "<!--mdb:mi_MI_MD_I-c-->",
+    "creation_date": "<!--mdb:ii_MD_DI-ci_c-d-->",
+    "band_max_value": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-max-->",
+    "band_min_value": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-min-->",
+    "band_max_value_2": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-max2-->",
+    "band_min_value_2": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-min2-->",
+}
+DAILY_PM10_METADATA_CODES = {
+    **BASE_METADATA_CODES,
+    **{
+        "modis_product_name": "<!--nombreProductoModis-->",
+        "merra_product_name": "<!--NombreProductoMerra-->",
+        "viirs_product_name": "<!--NombreProductoViirs-->",
+    },
+}
+MONTHLY_PM10_METADATA_CODES = {
+    **BASE_METADATA_CODES,
+    **{
+        "band_max_value_3": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-max3-->",
+        "band_min_value_3": "<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-min3-->",
+        "pm10_product_names": "<!--todos los productos PM10-->",
+    },
+}
+ICA_PM10_METADATA_CODES = {
+    **BASE_METADATA_CODES,
+    **{"pm10_product_names": "<!--todos los productos PM10-->"},
+}
+
+
+# ETL's
+DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 
 MODIS_REGION = {"north": -21.76, "south": -55.08, "east": -53.58, "west": -73.6}
 
 MAIAC_PRODUCT = "MCD19A2"
 MAIAC_COLLECTION = 6
+MAIAC_BANDS = {0: "Optical_Depth_047", 5: "AOD_QA"}
 
 
 VIIRS_PRODUCT = "VNP46A1"
 VIIRS_COLLECTION = 5000
+VIIRS_DATE_START = f"{dt.datetime.now().year}-04-01"
+VIIRS_DATE_END = f"{ dt.datetime.now().year}-06-30"
+XML_VIIRS_NAME = "Promedio de Abril, Mayo y Junio  {} de VNP46A1,"
 
 
 MERRA_VERSION = "5.12.4"
@@ -29,12 +92,6 @@ MERRA_DATASETS = [
         "version": MERRA_VERSION,
         "variables": [
             "BCCMASS",
-            "DMSSMASS",
-            "DUSMASS",
-            "OCSMASS",
-            "SO2SMASS",
-            "SO4SMASS",
-            "SSSMASS",
         ],
     },
     {
@@ -67,4 +124,11 @@ MERRA_DATASETS = [
         "version": MERRA_VERSION,
         "variables": ["PS", "RH", "T", "U", "V"],
     },
+]
+
+XML_MERRA_PRODUCT_NAMES = [
+    "MERRA2_400.tavg1_2d_aer_Nx.{}.SUB.nc: (BCCMASS)",
+    "MERRA2_400.tavg1_2d_flx_Nx.{}.SUB.nc: (PBLH, PRECTOT, SPEED, SPEEDMAX, USTAR)",
+    "MERRA2_400.tavg1_2d_rad_Nx.{}.SUB.nc: (ALBEDO, CLDHGH, CLDLOW)",
+    "MERRA2_400.inst3_3d_asm_Nv.{}.SUB.nc: (PS, RH, T, U, V)",
 ]

@@ -113,7 +113,9 @@ venv.bak/
 .vscode/
 
 # data directory
-data/
+
+
+
 
 # Ag (the silver searcher) ignore file list
 .ignore
