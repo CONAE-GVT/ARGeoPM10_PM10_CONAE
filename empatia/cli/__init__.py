@@ -9,6 +9,7 @@ from empatia.cli.pipelines import (
     clean_storages,
     monthly_pipeline,
 )
+from empatia.cli.training import train
 
 
 @click.group(
@@ -16,6 +17,11 @@ from empatia.cli.pipelines import (
 )
 def main() -> None:
     """Empatia entry point script."""
+
+
+@main.command(name="hello")
+def hello_world() -> None:
+    print("Hello Empatia!")
 
 
 @main.command(name="run_viirs_etl")
@@ -48,3 +54,9 @@ def compute_monthly_products(ndays: int) -> None:
 )
 def clean_all(ndays: int) -> None:
     clean_storages(ndays)
+
+
+@main.command(name="run_training")
+def run_training() -> None:
+    train()
+

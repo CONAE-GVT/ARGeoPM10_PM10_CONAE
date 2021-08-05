@@ -3,11 +3,12 @@ Support system for decision making in air quality management
 
 ## Requirements
  - Python >= 3.7.0
- - GRASS GIS >= 7.8
- - Any flavour of Conda. We recommend [Miniconda](https://docs.conda.io/en/latest/miniconda.html). 
+ - GRASS GIS >= 7.6
+ - Any flavour of Conda. We recommend [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
+ - A version Docker on your OS
 
 
-## Set up
+## Local Set up
 
 In order to provide environment variables to the project it is needed a `.env` file in the root of the project.
 Copy the `.env.template` as `.env` and replace the placeholders with real values.
@@ -67,6 +68,46 @@ $ pre-commit install
 $ touch .git/hooks/pre-push;echo "pytest" > .git/hooks/pre-push; chmod a+x .git/hooks/pre-push
 ```
 
+## Dockerized App
+
+- Build image
+```
+$ ./build.sh --tag <tag_name>
+```
+
+- Create container
+```
+$ docker run --name <container_name> --env-file .env-docker -it empatia:<tag_name> /bin/bash
+```
+
+- Run container
+```
+$ docker start <container_name>
+```
+
+- Enter to container
+```
+$ docker exec -it <container_name> /bin/bash
+```
+
+ - Create a .netrc file in home directory.
+```
+$ cd
+```
+
+```
+$ touch .netrc
+```
+
+```
+$ echo "machine urs.earthdata.nasa.gov login <uid> password <password> >> .netrc"
+```
+where `<uid>` is your user name and `<password>` is your Earthdata Login password without the brackets.
+
+```
+chmod 0600 .netrc
+```
+
 ## CLIs
 
 ```
@@ -101,6 +142,13 @@ $ empatia clean_all --ndays 60
 ```
 
 It cleans GRASS DB and removes obsolete files/folder created before `current date - ndays`
+
+```
+$ empatia run_training
+```
+
+It runs PM1O model training
+
 
 ## How to set custom color palletes
 

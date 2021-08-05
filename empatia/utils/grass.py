@@ -156,7 +156,7 @@ def import_gtiff(rfile: Union[str, Path], name: str) -> None:
         rfile: raster file name
         name: raster map name
     """
-    grass.run_command("r.in.gdal", input=rfile, output=name, flags="eo", overwrite=True)
+    grass.run_command("r.in.gdal", input=rfile, output=name, flags="o", overwrite=True)
 
 
 def import_netcdf(rfile: Union[str, Path], band: int, name: str) -> None:
@@ -168,18 +168,17 @@ def import_netcdf(rfile: Union[str, Path], band: int, name: str) -> None:
         name: raster map name
     """
     grass.run_command(
-        "r.in.gdal", input=rfile, output=name, flags="eo", band=band, overwrite=True
+        "r.in.gdal", input=rfile, output=name, flags="o", band=band, overwrite=True
     )
 
 
-def compute_mean(pattern: str, name: str) -> None:
+def compute_mean(rasters: List, name: str) -> None:
     """
     Compute mean for a set of raster maps
     Args:
-        pattern: regex to get raster map names
+        rasters: list of raster map names
         name: raster map name for the computed mean
     """
-    rasters = grass.list_grouped(type=["raster"], pattern=pattern)[MAPSET]
     grass.run_command(
         "r.series",
         input=",".join(rasters),
@@ -189,14 +188,13 @@ def compute_mean(pattern: str, name: str) -> None:
     )
 
 
-def compute_stddev(pattern: str, name: str) -> None:
+def compute_stddev(rasters: List, name: str) -> None:
     """
     Compute standard desviation for a set of raster maps
     Args:
-        pattern: regex to get raster map names
+        rasters: list of raster map names
         name: raster map name for the computed standard desviation
     """
-    rasters = grass.list_grouped(type=["raster"], pattern=pattern)[MAPSET]
     grass.run_command(
         "r.series",
         input=",".join(rasters),
@@ -206,14 +204,13 @@ def compute_stddev(pattern: str, name: str) -> None:
     )
 
 
-def get_count(pattern: str, name: str) -> None:
+def get_count(rasters: List, name: str) -> None:
     """
     Compute N for a set of raster maps
     Args:
-        pattern: regex to get raster map names
+        rasters: list of raster map names
         name: raster map name for the computed N
     """
-    rasters = grass.list_grouped(type=["raster"], pattern=pattern)[MAPSET]
     grass.run_command(
         "r.series",
         input=",".join(rasters),

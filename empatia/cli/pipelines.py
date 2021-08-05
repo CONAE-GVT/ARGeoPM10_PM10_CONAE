@@ -116,6 +116,7 @@ def viirs_etl() -> None:
     apply_mask(REGION_DATA_PATH)
 
     logger.info("Downloading VIIRS data...")
+    viirs_rasters = []
     for ds in ds_to_download:
         try:
             logger.info(f"Date: {ds}")
@@ -129,8 +130,8 @@ def viirs_etl() -> None:
             outname = f"viirs_{ds}"
             current_viirs_path = f"{MODIS_DATASET_PATH}/{VIIRS_PRODUCT}/{ds}/"
             get_viirs_mosaic(current_viirs_path, 4, output_dir, f"{outname}.tif")
-
             import_gtiff(f"{output_dir}{outname}.tif", outname)
+            viirs_rasters.append(outname)
         except Exception as e:
             logger.error(f"Not found VIIRS for {ds}: {e}")
             uncompleted_dates.append(ds)
@@ -139,7 +140,7 @@ def viirs_etl() -> None:
     logger.info("Computing VIIRS average...")
     try:
         raster_name = f"viirs_night_lights_{date_start.year}"
-        compute_mean(f"viirs_{date_start.year}*", raster_name)
+        compute_mean(viirs_rasters, raster_name)
         refresh_region()
         raster2gtiff(raster_name, f"{output_dir}{raster_name}")
         log_data = {"status": "OK", "uncompleted_dates": uncompleted_dates}
@@ -214,6 +215,9 @@ def daily_pipeline() -> None:
     """
     estimator = PM10Estimator.load_model(MODEL_PATH)
     today = dt.datetime.today()
+    min_exec_date = dt.datetime.strftime(
+        today - dt.timedelta(days=90), DEFAULT_DATE_FORMAT
+    )
     log_file = f"{PROCESSED_DATA_PATH}/log.txt"
 
     logger.info("Running ETL ...")
@@ -228,7 +232,9 @@ def daily_pipeline() -> None:
         uncompleted_dates = []
         date_start = today
 
-    ds_to_download = set(uncompleted_dates + date_range(date_start, today))
+    ds_to_download = list(set(uncompleted_dates + date_range(date_start, today)))
+    ds_to_download = sorted(filter(lambda x: x >= min_exec_date, ds_to_download))
+
     logger.info("Get VIIRS data")
     viirs_path = get_viirs_dataset_path(today.year)
     if not os.path.exists(viirs_path):
@@ -239,7 +245,8 @@ def daily_pipeline() -> None:
     apply_mask(REGION_DATA_PATH)
 
     logger.info("Processing...")
-    for ds in sorted(ds_to_download):
+    new_uncompleted_dates = []
+    for ds in ds_to_download:
         try:
             logger.info(f"Date: {ds}")
 
@@ -367,8 +374,10 @@ def daily_pipeline() -> None:
             pattern = f"{processed_dir}CONAE_MOD_CDA_ARGeoPM10_PM10_*.tif"
             daily_predictions = sorted(glob.glob(pattern))
             products = []
+            ica_rasters = []
             for e, dp in enumerate(daily_predictions):
                 rname = f"daily_prediction_{e}"
+                ica_rasters.append(rname)
                 import_gtiff(dp, rname)
                 products.append(dp.split("/")[-1].split(".")[0])
 
@@ -380,7 +389,7 @@ def daily_pipeline() -> None:
             if not os.path.exists(p_dir):
                 os.mkdir(p_dir)
             # Compute daily mean
-            compute_mean("daily_prediction_*", "daily_ica")
+            compute_mean(ica_rasters, "daily_ica")
             # Reclassified prediction
             rname = "ICA"
             discretize_values("daily_ica", get_qa_class, rname)
@@ -415,12 +424,20 @@ def daily_pipeline() -> None:
 
         except Exception as e:
             logger.error(f"Uncompleted process: {e}")
-            uncompleted_dates.append(ds)
+            new_uncompleted_dates.append(ds)
             pass
 
+        # Delete intermediate files
+        files_to_del = glob.glob(f"{processed_dir}*.tif")
+        files_to_preserve = glob.glob(f"{processed_dir}CONAE*")
+        files_to_del = set(files_to_del) - set(files_to_preserve)
+        for ftd in files_to_del:
+            os.remove(ftd)
+
+    # Logger data
     log_data = {
         "last_execution_date": ds,
-        "uncompleted_dates": list(set(uncompleted_dates)),
+        "uncompleted_dates": sorted(set(new_uncompleted_dates)),
     }
     with open(log_file, "w") as outfile:
         json.dump(log_data, outfile)
@@ -465,27 +482,29 @@ def monthly_pipeline(ndays: int) -> None:
     for sensor in SENSORS:
         logger.info(f"Getting monthly product for {sensor}")
         products = []
+        rasters = []
         product_prefix = f"{sensor.lower()}_{year}_{month}"
         for e, rfile in enumerate(daily_preds[sensor]):
+            rasters.append(f"{product_prefix}_{e}")
             import_gtiff(rfile, f"{product_prefix}_{e}")
             products.append(rfile.split("/")[-1].split(".")[0])
 
         refresh_region()
         # PM10 monthly mean
         rname = f"PM10_media_{sensor}"
-        compute_mean(f"{product_prefix}_*", rname)
+        compute_mean(rasters, rname)
         _max, _min = get_ranges(rname)
         group = [rname]
 
         # PM10 monthly standard deviation
         rname = f"PM10_desvest_{sensor}"
-        compute_stddev(f"{product_prefix}_*", rname)
+        compute_stddev(rasters, rname)
         _max2, _min2 = get_ranges(rname)
         group.append(rname)
 
         # Amount of values
         rname = "PM10_n"
-        get_count(f"{product_prefix}_*", rname)
+        get_count(rasters, rname)
         _max3, _min3 = get_ranges(rname)
         group.append(rname)
 

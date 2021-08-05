@@ -7,19 +7,10 @@ def grass_setup() -> Tuple[str, str, str, str]:
     """
     Get GRASS configuration
     """
-    # DATA
-    # Define GRASS DATABASE
-    # Add your path to grassdata (GRASS GIS database) directory
-    gisdb = os.path.join(os.path.expanduser("~"), "grass")
-    # Set GISDBASE environment variable
-    os.environ["GISDBASE"] = gisdb
-    # Specify (existing) location and mapset
-    location = "LatLon"
-    mapset = "empatia"
-    # Query GRASS 7 itself for its GISBASE
-    gisbase = "/usr/lib/grass78"
-    # Set GISBASE environment variable
-    os.environ["GISBASE"] = gisbase
+    gisdb = os.environ["GISDBASE"]
+    location = os.environ["LOCATION"]
+    mapset = os.environ["MAPSET"]
+    gisbase = os.environ["GISBASE"]
     # The following not needed with trunk
     os.environ["PATH"] += os.pathsep + os.path.join(gisbase, "extrabin")
 
