@@ -300,7 +300,13 @@ def daily_pipeline() -> None:
                     rname = f"{var}_{min_date.hour}_{sensor}"
                     rofile = f"{processed_dir}{rname}"
                     remove_mask()
-                    import_netcdf(current_merra_path, merra_band, rname)
+                    try:
+                        import_netcdf(current_merra_path, merra_band, rname)
+                    except:
+                        os.remove(f"{MERRA_DATASET_PATH}/{shortname}/{ds}/{product}.nc")
+                        get_merra_files(ds, **dataset)  # type: ignore
+                        import_netcdf(current_merra_path, merra_band, rname)
+                        pass
                     get_resampling(rname)
                     apply_mask(REGION_DATA_PATH)
                     refresh_region()
