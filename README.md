@@ -155,16 +155,11 @@ It runs PM1O model training
 * If you want to change the PM10 color pallete, you need to change the following file: `empatia/data/utils/pm10_color_rules.txt`.
 This file looks like:
 ```
-    0.1 0:0:255
-    0.5 0:128:255
-    1 0:255:255
-    3 128:255:0
-    5 255:255:0
-    10 255:128:0
-    20 255:0:0
-    50 255:0:128
-    100 255:0:255
-    200 128:0:255
+    50 26:150:65
+    75 166:217:106
+    100 255:255:192
+    125 253:174:97
+    150 215:25:28
 ```
 where the first column is the PM10 value and the second column is the RGB color.
 
@@ -172,11 +167,11 @@ where the first column is the PM10 value and the second column is the RGB color.
 * If you want to change the ICA color pallete, you need to change the following file: `empatia/data/utils/ica_color_rules.txt`.
 This file looks like:
 ```
-    1 39:174:96
-    2 46:204:113
-    3 241:196:15
-    4 230:126:34
-    5 231:76:60
-    6 192:57:43
+    1 0:228:0
+    2 255:255:0
+    3 255:126:0
+    4 255:0:0
+    5 143:63:151
+    6 126:0:35
 ```
 where the first column is the ICA value and the second column is the RGB color.
