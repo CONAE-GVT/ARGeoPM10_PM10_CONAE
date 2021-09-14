@@ -212,7 +212,7 @@ This file looks like:
     225 75:0:130
     250 0:0:0
 ```
-where the first column is the PM10 value and the second column is the RGB color.
+where the first column is the PM10 value (micrograms/m3) and the second column is the RGB color.
 
 
 * If you want to change the ICA color scale, you need to change the following file: `empatia/data/utils/ica_color_rules.txt`.
