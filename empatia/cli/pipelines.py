@@ -135,7 +135,6 @@ def viirs_etl() -> None:
         except Exception as e:
             logger.error(f"Not found VIIRS for {ds}: {e}")
             uncompleted_dates.append(ds)
-            pass
 
     logger.info("Computing VIIRS average...")
     try:
@@ -147,7 +146,6 @@ def viirs_etl() -> None:
     except Exception as e:
         logger.error(f"Uncompleted VIIRS update: {e}")
         log_data = {"status": "FAIL", "uncompleted_dates": uncompleted_dates}
-        pass
 
     with open(log_file, "w") as outfile:
         json.dump(log_data, outfile)
@@ -214,11 +212,11 @@ def daily_pipeline() -> None:
         ICA
     """
     estimator = PM10Estimator.load_model(MODEL_PATH)
+    log_file = f"{PROCESSED_DATA_PATH}/log.txt"
     today = dt.datetime.today()
     min_exec_date = dt.datetime.strftime(
         today - dt.timedelta(days=90), DEFAULT_DATE_FORMAT
     )
-    log_file = f"{PROCESSED_DATA_PATH}/log.txt"
 
     logger.info("Running ETL ...")
     if os.path.exists(log_file):
@@ -232,8 +230,8 @@ def daily_pipeline() -> None:
         uncompleted_dates = []
         date_start = today
 
-    ds_to_download = list(set(uncompleted_dates + date_range(date_start, today)))
-    ds_to_download = sorted(filter(lambda x: x >= min_exec_date, ds_to_download))
+    dates_to_download = list(set(uncompleted_dates + date_range(date_start, today)))
+    dates_to_download = sorted(filter(lambda x: x >= min_exec_date, dates_to_download))
 
     logger.info("Get VIIRS data")
     viirs_path = get_viirs_dataset_path(today.year)
@@ -246,15 +244,15 @@ def daily_pipeline() -> None:
 
     logger.info("Processing...")
     new_uncompleted_dates = []
-    for ds in ds_to_download:
+    for date in dates_to_download:
         try:
-            logger.info(f"Date: {ds}")
+            logger.info(f"Date: {date}")
 
-            processed_dir = f"{PROCESSED_DATA_PATH}/{ds}/"
+            processed_dir = f"{PROCESSED_DATA_PATH}/{date}/"
             if not os.path.exists(processed_dir):
                 os.mkdir(processed_dir)
 
-            prediction_dir = f"{PREDICTION_DATA_PATH}/{ds}/"
+            prediction_dir = f"{PREDICTION_DATA_PATH}/{date}/"
             if not os.path.exists(prediction_dir):
                 os.mkdir(prediction_dir)
 
@@ -262,11 +260,11 @@ def daily_pipeline() -> None:
             get_modis_files(
                 MAIAC_PRODUCT,
                 MAIAC_COLLECTION,
-                start_date=ds,
+                start_date=date,
                 **MODIS_REGION,  # type: ignore
             )
 
-            current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{ds}/"
+            current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
             for band, prefix in MAIAC_BANDS.items():
                 modis_outputs = get_modis_mosaic(
                     current_maiac_path, band, prefix, processed_dir
@@ -285,13 +283,13 @@ def daily_pipeline() -> None:
                 shortname = dataset.get("shortname", "")
                 product = dataset.get("product", "")
                 variables = dataset.get("variables", [])
-                get_merra_files(ds, **dataset)  # type: ignore
+                get_merra_files(date, **dataset)  # type: ignore
                 # Import to GRASS to reproject and rescale
                 for modis_orbit, var in itertools.product(modis_outputs, variables):
                     _, sensor, min_date = modis_orbit.values()
                     current_merra_path = (
                         f"NETCDF:{MERRA_DATASET_PATH}/{shortname}/"
-                        f"{ds}/{product}.nc:{var}"
+                        f"{date}/{product}.nc:{var}"
                     )
                     merra_band = (int(min_date.hour) % 12) + 1
                     if shortname == "M2I3NVASM":
@@ -302,11 +300,13 @@ def daily_pipeline() -> None:
                     remove_mask()
                     try:
                         import_netcdf(current_merra_path, merra_band, rname)
-                    except:
-                        os.remove(f"{MERRA_DATASET_PATH}/{shortname}/{ds}/{product}.nc")
-                        get_merra_files(ds, **dataset)  # type: ignore
+                    except Exception:
+                        os.remove(
+                            f"{MERRA_DATASET_PATH}/{shortname}/{date}/{product}.nc"
+                        )
+                        get_merra_files(date, **dataset)  # type: ignore
                         import_netcdf(current_merra_path, merra_band, rname)
-                        pass
+
                     get_resampling(rname)
                     apply_mask(REGION_DATA_PATH)
                     refresh_region()
@@ -323,8 +323,8 @@ def daily_pipeline() -> None:
                 features_files.insert(4, str(DOMAIN_DATA_PATH))
                 features_files.append(str(viirs_path))
                 # Predict PM10
-                p_file = f"CONAE_MOD_CDA_ARGeoPM10_PM10_{min_date.strftime('%Y%m%d_%H%M%S')}000_v001"
-                predict(estimator, features_files, ds, f"{processed_dir}{p_file}")
+                p_file = f"CONAE_MOD_CDA_ARGeoPM10_PM10_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
+                predict(estimator, features_files, date, f"{processed_dir}{p_file}")
                 log_prediction[sensor].append(f"{processed_dir}{p_file}.tif")
                 # Get prediction file
                 pm10_file = f"{processed_dir}{p_file}.tif"
@@ -430,19 +430,18 @@ def daily_pipeline() -> None:
 
         except Exception as e:
             logger.error(f"Uncompleted process: {e}")
-            new_uncompleted_dates.append(ds)
-            pass
+            new_uncompleted_dates.append(date)
 
         # Delete intermediate files
         files_to_del = glob.glob(f"{processed_dir}*.tif")
         files_to_preserve = glob.glob(f"{processed_dir}CONAE*")
-        files_to_del = set(files_to_del) - set(files_to_preserve)
+        files_to_del = set(files_to_del) - set(files_to_preserve)  # type: ignore
         for ftd in files_to_del:
             os.remove(ftd)
 
     # Logger data
     log_data = {
-        "last_execution_date": ds,
+        "last_execution_date": date,
         "uncompleted_dates": sorted(set(new_uncompleted_dates)),
     }
     with open(log_file, "w") as outfile:

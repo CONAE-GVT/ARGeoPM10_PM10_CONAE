@@ -22,17 +22,17 @@ def get_qa_class(x: float) -> int:
     _class = -9999
     if np.isnan(x):
         _class = -9999
-    elif (x >= 0) and (x < 20):
+    elif (x > 0.1) and (x <= 54):
         _class = 1
-    elif (x >= 20) and (x < 30):
+    elif (x > 54) and (x <= 154):
         _class = 2
-    elif (x >= 30) and (x < 50):
+    elif (x > 154) and (x <= 254):
         _class = 3
-    elif (x >= 50) and (x < 70):
+    elif (x > 254) and (x <= 354):
         _class = 4
-    elif (x >= 70) and (x < 105):
+    elif (x > 354) and (x <= 424):
         _class = 5
-    elif x >= 105:
+    elif x > 424:
         _class = 6
 
     return _class

@@ -38,12 +38,10 @@ def train() -> None:
     logger.info("Searching best model...")
     rf = search_best_model(X_train, y_train, PM10Estimator(), get_param_grid())
 
-    metadata["training_metrics"] = get_metrics(
-        np.array(y_train), rf.predict(X_train)
-    )  # type: ignore
-    metadata["test_metrics"] = get_metrics(
-        np.array(y_test), rf.predict(X_test)
-    )  # type: ignore
+    training_metrics = get_metrics(np.array(y_train), rf.predict(X_train))
+    metadata["training_metrics"] = training_metrics  # type: ignore
+    test_metrics = get_metrics(np.array(y_test), rf.predict(X_test))
+    metadata["test_metrics"] = test_metrics  # type: ignore
     metadata["model_params"] = rf.get_params()
 
     with open(log_file, "w") as outfile:

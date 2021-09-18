@@ -26,7 +26,7 @@ FEATURES_COLS = [
 ]
 
 # Products
-MONTHLY_PRODUCT_CODES = {"Aqua": "163000", "Terra": "133000"}
+MONTHLY_PRODUCT_CODES = {"Aqua": "193000", "Terra": "163000"}
 
 BASE_METADATA_CODES = {
     "id": "<!--mdb:mi_MI_MD_I-c-->",

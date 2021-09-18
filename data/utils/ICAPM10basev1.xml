@@ -35,18 +35,14 @@
 			<cit:party>
 				<cit:CI_Organisation>
 					<cit:name>
-						<gco:CharacterString>
-							<!--mdb:c_CI_R-p-CI_O-n-->
-						</gco:CharacterString>
+						<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-n--></gco:CharacterString>
 					</cit:name>
 					<cit:contactInfo>
 						<cit:CI_Contact>
 							<cit:phone>
 								<cit:CI_Telephone>
 									<cit:number>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-p-n-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-p-n--></gco:CharacterString>
 									</cit:number>
 									<cit:numberType>
 										<cit:CI_TelephoneTypeCode codeList="codeListLocation#CI_TelephoneTypeCode" codeListValue="voice"/>
@@ -56,29 +52,19 @@
 							<cit:address>
 								<cit:CI_Address>
 									<cit:deliveryPoint>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-dp-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-dp--></gco:CharacterString>
 									</cit:deliveryPoint>
 									<cit:city>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-c-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-c--></gco:CharacterString>
 									</cit:city>
 									<cit:postalCode>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-pc-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-pc--></gco:CharacterString>
 									</cit:postalCode>
 									<cit:country>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-p-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-p--></gco:CharacterString>
 									</cit:country>
 									<cit:electronicMailAddress>
-										<gco:CharacterString>
-											<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em--></gco:CharacterString>
 									</cit:electronicMailAddress>
 								</cit:CI_Address>
 							</cit:address>
@@ -142,16 +128,12 @@
 			<mri:citation>
 				<cit:CI_Citation>
 					<cit:title>
-						<gco:CharacterString>
-							<!--mdb:ii_MD_DI-ci_c-t-->
-						</gco:CharacterString>
+						<gco:CharacterString><!--mdb:ii_MD_DI-ci_c-t--></gco:CharacterString>
 					</cit:title>
 					<cit:date>
 						<cit:CI_Date>
 							<cit:date>
-								<gco:DateTime>
-									<!--mdb:ii_MD_DI-ci_c-d-->
-								</gco:DateTime>
+								<gco:DateTime><!--mdb:ii_MD_DI-ci_c-d--></gco:DateTime>
 							</cit:date>
 							<cit:dateType>
 								<cit:CI_DateTypeCode codeList="codeListLocation#CI_DateTypeCode" codeListValue="creation"/>
@@ -161,10 +143,10 @@
 					<cit:series>
 						<cit:CI_Series>
 							<cit:name>
-								<gco:CharacterString>Índice de calidad de aire diario derivado de PM10</gco:CharacterString>
+								<gco:CharacterString>Índice de calidad del aire diario derivado de PM10 - ARGeoPM10</gco:CharacterString>
 							</cit:name>
 							<cit:issueIdentification>
-								<gco:CharacterString>ICAPM10</gco:CharacterString>
+								<gco:CharacterString>ICAPM10 -ARGeoPM10</gco:CharacterString>
 							</cit:issueIdentification>
 							<cit:page>
 								<gco:CharacterString><!--mdb:ii_MD_DI-ci_c-s-CI_s-p--></gco:CharacterString>
@@ -174,13 +156,13 @@
 				</cit:CI_Citation>
 			</mri:citation>
 			<mri:abstract>
-				<gco:CharacterString>Índice de Calidad del Aire diario para la República Argentina, obtenido a partir del promedio diario de PM10 estimado por el modelo ARGeoPM10. Trabajo realizado en base a la tesis doctoral de Natacha Soledad Represa (2020) http://sedici.unlp.edu.ar/handle/10915/94380, financiado por el Banco Iberoamericano de Desarrollo a través de la convocatoria Empatia.la.</gco:CharacterString>
+				<gco:CharacterString>Índice de Calidad del Aire diario para la República Argentina, obtenido a partir del promedio diario de PM10 estimado por el modelo ARGeoPM10, utilizando los datos de MODIS/Terra y Aqua, MERRA-2, VIIRS/Suomi-NPP y GMTED2010. Trabajo realizado en base a la tesis doctoral de Natacha Soledad Represa (2020) http://sedici.unlp.edu.ar/handle/10915/94380 y con la financiación del Banco Interamericano de Desarrollo, BID, a través de la convocatoria Empatia.la 2020.</gco:CharacterString>
 			</mri:abstract>
 			<mri:credit>
 				<gco:CharacterString>CONAE-GVT, IG, CONICET, EMPATIA</gco:CharacterString>
 			</mri:credit>
 			<mri:status>
-				<mcc:MD_ProgressCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ProgressCode" codeListValue="onGoing"/>
+				<mcc:MD_ProgressCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_ProgressCode" codeListValue="completed"/>
 			</mri:status>
 			<mri:pointOfContact>
 				<cit:CI_Responsibility>
@@ -190,38 +172,26 @@
 					<cit:party>
 						<cit:CI_Organisation>
 							<cit:name>
-								<gco:CharacterString>
-									<!--mdb:ii_MD_DI-poc-p-CI_O-n-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-n--></gco:CharacterString>
 							</cit:name>
 							<cit:contactInfo>
 								<cit:CI_Contact>
 									<cit:address>
 										<cit:CI_Address>
 											<cit:deliveryPoint>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-dp-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-dp--></gco:CharacterString>
 											</cit:deliveryPoint>
 											<cit:city>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c--></gco:CharacterString>
 											</cit:city>
 											<cit:postalCode>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp--></gco:CharacterString>
 											</cit:postalCode>
 											<cit:country>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p--></gco:CharacterString>
 											</cit:country>
 											<cit:electronicMailAddress>
-												<gco:CharacterString>
-													<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em--></gco:CharacterString>
 											</cit:electronicMailAddress>
 										</cit:CI_Address>
 									</cit:address>
@@ -230,14 +200,10 @@
 							<cit:individual>
 								<cit:CI_Individual>
 									<cit:name>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n--></gco:CharacterString>
 									</cit:name>
 									<cit:positionName>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p--></gco:CharacterString>
 									</cit:positionName>
 								</cit:CI_Individual>
 							</cit:individual>
@@ -253,9 +219,7 @@
 					<cit:party>
 						<cit:CI_Organisation>
 							<cit:name>
-								<gco:CharacterString>
-									<!--mdb:ii_MD_DI-poc-p-CI_O-n2-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-n2--></gco:CharacterString>
 							</cit:name>
 							<cit:contactInfo>
 								<cit:CI_Contact>
@@ -265,24 +229,16 @@
 												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-dp2--></gco:CharacterString>
 											</cit:deliveryPoint>
 											<cit:city>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c2-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c2--></gco:CharacterString>
 											</cit:city>
 											<cit:postalCode>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp2-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp2--></gco:CharacterString>
 											</cit:postalCode>
 											<cit:country>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p2-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p2--></gco:CharacterString>
 											</cit:country>
 											<cit:electronicMailAddress>
-												<gco:CharacterString>
-													<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em2-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-em2--></gco:CharacterString>
 											</cit:electronicMailAddress>
 										</cit:CI_Address>
 									</cit:address>
@@ -291,14 +247,10 @@
 							<cit:individual>
 								<cit:CI_Individual>
 									<cit:name>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n2-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n2--></gco:CharacterString>
 									</cit:name>
 									<cit:positionName>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p2-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p2--></gco:CharacterString>
 									</cit:positionName>
 								</cit:CI_Individual>
 							</cit:individual>
@@ -314,38 +266,26 @@
 					<cit:party>
 						<cit:CI_Organisation>
 							<cit:name>
-								<gco:CharacterString>
-									<!--mdb:ii_MD_DI-poc-p-CI_O-n1-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-n1--></gco:CharacterString>
 							</cit:name>
 							<cit:contactInfo>
 								<cit:CI_Contact>
 									<cit:address>
 										<cit:CI_Address>
 											<cit:deliveryPoint>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-dp1-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-dp1--></gco:CharacterString>
 											</cit:deliveryPoint>
 											<cit:city>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c1-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-c1--></gco:CharacterString>
 											</cit:city>
 											<cit:postalCode>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp1-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-cp1--></gco:CharacterString>
 											</cit:postalCode>
 											<cit:country>
-												<gco:CharacterString>
-													<!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p1-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-p1--></gco:CharacterString>
 											</cit:country>
 											<cit:electronicMailAddress>
-												<gco:CharacterString>
-													<!--mdb:c_CI_R-p-CI_O-ci-CI_C-a-CI_A-em1-->
-												</gco:CharacterString>
+												<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-ci-CI_C-a-CI_A-em1--></gco:CharacterString>
 											</cit:electronicMailAddress>
 										</cit:CI_Address>
 									</cit:address>
@@ -354,14 +294,10 @@
 							<cit:individual>
 								<cit:CI_Individual>
 									<cit:name>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n1-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-n1--></gco:CharacterString>
 									</cit:name>
 									<cit:positionName>
-										<gco:CharacterString>
-											<!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p1-->
-										</gco:CharacterString>
+										<gco:CharacterString><!--mdb:ii_MD_DI-poc-p-CI_O-i-CI_I-p1--></gco:CharacterString>
 									</cit:positionName>
 								</cit:CI_Individual>
 							</cit:individual>
@@ -416,9 +352,7 @@
 			<mri:graphicOverview>
 				<mcc:MD_BrowseGraphic>
 					<mcc:fileName>
-						<gco:CharacterString>
-							<!--mdb:ii_MD_DI-go-MD_BG-fn-a-->
-						</gco:CharacterString>
+						<gco:CharacterString><!--mdb:ii_MD_DI-go-MD_BG-fn-a--></gco:CharacterString>
 					</mcc:fileName>
 					<mcc:fileDescription>
 						<gco:CharacterString>thumbnail</gco:CharacterString>
@@ -428,9 +362,7 @@
 			<mri:graphicOverview>
 				<mcc:MD_BrowseGraphic>
 					<mcc:fileName>
-						<gco:CharacterString>
-							<!--mdb:ii_MD_DI-go-MD_BG-fn-b-->
-						</gco:CharacterString>
+						<gco:CharacterString><!--mdb:ii_MD_DI-go-MD_BG-fn-b--></gco:CharacterString>
 					</mcc:fileName>
 					<mcc:fileDescription>
 						<gco:CharacterString>large_thumbnail</gco:CharacterString>
@@ -460,6 +392,46 @@
 			<mri:descriptiveKeywords>
 				<mri:MD_Keywords>
 					<mri:keyword>
+						<gco:CharacterString>TERRA</gco:CharacterString>
+					</mri:keyword>
+					<mri:type>
+						<mri:MD_KeywordTypeCode codeListValue="platform" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"/>
+					</mri:type>
+				</mri:MD_Keywords>
+			</mri:descriptiveKeywords>
+			<mri:descriptiveKeywords>
+				<mri:MD_Keywords>
+					<mri:keyword>
+						<gco:CharacterString>MODIS</gco:CharacterString>
+					</mri:keyword>
+					<mri:type>
+						<mri:MD_KeywordTypeCode codeListValue="instrument" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"/>
+					</mri:type>
+				</mri:MD_Keywords>
+			</mri:descriptiveKeywords>
+			<mri:descriptiveKeywords>
+				<mri:MD_Keywords>
+					<mri:keyword>
+						<gco:CharacterString>SNPP</gco:CharacterString>
+					</mri:keyword>
+					<mri:type>
+						<mri:MD_KeywordTypeCode codeListValue="platform" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"/>
+					</mri:type>
+				</mri:MD_Keywords>
+			</mri:descriptiveKeywords>
+			<mri:descriptiveKeywords>
+				<mri:MD_Keywords>
+					<mri:keyword>
+						<gco:CharacterString>VIIRS</gco:CharacterString>
+					</mri:keyword>
+					<mri:type>
+						<mri:MD_KeywordTypeCode codeListValue="instrument" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_KeywordTypeCode"/>
+					</mri:type>
+				</mri:MD_Keywords>
+			</mri:descriptiveKeywords>
+			<mri:descriptiveKeywords>
+				<mri:MD_Keywords>
+					<mri:keyword>
 						<gco:CharacterString>ICA</gco:CharacterString>
 					</mri:keyword>
 					<mri:type>
@@ -476,7 +448,7 @@
 						<mco:MD_RestrictionCode codeListValue="otherRestrictions" codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#MD_RestrictionCode"/>
 					</mco:useConstraints>
 					<mco:otherConstraints>
-						<gco:CharacterString>Esta obra se encuentra bajo una Licencia Creative Commons Atribución 4.0 Internacional (CC BY 4.0). Soledad Represa - Instituto de Altos Estudios Espaciales Mario Gulich, CONICET. Fernanda García Ferreyra - GVT CONAE. (2021). Nombre del producto. Geocatálogos CONAE. http://doi....</gco:CharacterString>
+						<gco:CharacterString>Esta obra se encuentra bajo una Licencia Creative Commons Atribución 4.0 Internacional (CC BY 4.0). El producto debe ser citado como "ICA diario derivado de PM10 [fechadelproductocitado, en formato AAAAMMDD]. GEOCatálogos CONAE. Soledad Represa - IG-CONICET. Fernanda García Ferreyra - GVT-CONAE. (2021)"</gco:CharacterString>
 					</mco:otherConstraints>
 				</mco:MD_LegalConstraints>
 			</mri:resourceConstraints>
@@ -500,31 +472,21 @@
 			<mrc:featureCatalogueCitation>
 				<cit:CI_Citation>
 					<cit:title>
-						<gco:CharacterString>
-							<!--mdb:ci_MD_FCD-fcc-CI_C-t-->
-						</gco:CharacterString>
+						<gco:CharacterString><!--mdb:ci_MD_FCD-fcc-CI_C-t--></gco:CharacterString>
 					</cit:title>
 					<cit:onlineResource>
 						<cit:CI_OnlineResource>
 							<cit:linkage>
-								<gco:CharacterString>
-									<!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-l-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-l--></gco:CharacterString>
 							</cit:linkage>
 							<cit:protocol>
-								<gco:CharacterString>
-									<!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-p-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-p--></gco:CharacterString>
 							</cit:protocol>
 							<cit:name>
-								<gco:CharacterString>
-									<!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-n-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-n--></gco:CharacterString>
 							</cit:name>
 							<cit:description>
-								<gco:CharacterString>
-									<!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-d-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:ci_MD_FCD-fcc-CI_C-or-CI_OR-d--></gco:CharacterString>
 							</cit:description>
 							<cit:function>
 								<cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
@@ -538,7 +500,7 @@
 	<mdb:contentInfo>
 		<mrc:MD_CoverageDescription>
 			<mrc:attributeDescription>
-				<gco:RecordType>Índice de calidad del aire, promedio diario</gco:RecordType>
+				<gco:RecordType>Banda 1: Índice de calidad del aire, promedio diario</gco:RecordType>
 			</mrc:attributeDescription>
 			<mrc:processingLevelCode>
 				<mcc:MD_Identifier>
@@ -572,14 +534,10 @@
 								<gco:CharacterString>adimensional</gco:CharacterString>
 							</mrc:description>
 							<mrc:maxValue>
-								<gco:Real>
-									<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-max-->
-								</gco:Real>
+								<gco:Real><!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-max--></gco:Real>
 							</mrc:maxValue>
 							<mrc:minValue>
-								<gco:Real>
-									<!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-min-->
-								</gco:Real>
+								<gco:Real><!--mdb:ci_MD_CD-ag-MD_AG-a-MD_SD-min--></gco:Real>
 							</mrc:minValue>
 							<mrc:scaleFactor>
 								<gco:Real>1</gco:Real>
@@ -605,9 +563,7 @@
 							<cit:date>
 								<cit:CI_Date>
 									<cit:date>
-										<gco:DateTime>
-											<!--mdb:di_MD_D-df-MD_F-fsc-CI_C-d-CI_D-d-->
-										</gco:DateTime>
+										<gco:DateTime><!--mdb:di_MD_D-df-MD_F-fsc-CI_C-d-CI_D-d--></gco:DateTime>
 									</cit:date>
 									<cit:dateType>
 										<cit:CI_DateTypeCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_DateTypeCode" codeListValue="publication"/>
@@ -623,24 +579,16 @@
 					<mrd:onLine>
 						<cit:CI_OnlineResource>
 							<cit:linkage>
-								<gco:CharacterString>
-									<!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-l-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-l--></gco:CharacterString>
 							</cit:linkage>
 							<cit:protocol>
-								<gco:CharacterString>
-									<!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-p-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-p--></gco:CharacterString>
 							</cit:protocol>
 							<cit:name>
-								<gco:CharacterString>
-									<!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-n-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-n--></gco:CharacterString>
 							</cit:name>
 							<cit:description>
-								<gco:CharacterString>
-									<!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-d-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:di_MD_D-to-MD_DTO-ol-CI_OR-d--></gco:CharacterString>
 							</cit:description>
 							<cit:function>
 								<cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="download"/>
@@ -666,17 +614,15 @@
 			<mrl:additionalDocumentation>
 				<cit:CI_Citation>
 					<cit:title>
-						<gco:CharacterString>ATDB: nombre del documento</gco:CharacterString>
+						<gco:CharacterString>ATBD: ARGeoPM10 y productos derivados</gco:CharacterString>
 					</cit:title>
 					<cit:onlineResource>
 						<cit:CI_OnlineResource>
 							<cit:linkage>
-								<gco:CharacterString>
-									<!--mdb:rl_LI_L-ad_CI_C-od_CI_OR-l-->
-								</gco:CharacterString>
+								<gco:CharacterString><!--mdb:rl_LI_L-ad_CI_C-od_CI_OR-l--></gco:CharacterString>
 							</cit:linkage>
 							<cit:function>
-								<cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="fileAccess"/>
+								<cit:CI_OnLineFunctionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_OnLineFunctionCode" codeListValue="information"/>
 							</cit:function>
 						</cit:CI_OnlineResource>
 					</cit:onlineResource>
@@ -685,17 +631,17 @@
 			<mrl:processStep>
 				<mrl:LI_ProcessStep>
 					<mrl:description>
-						<gco:CharacterString>Completar</gco:CharacterString>
+						<gco:CharacterString>Índice de calidad del aire categorizado, obtenido del promedio diario de los productos de la serie "Material particulado PM10 - ARGeoPM10". Para información detallada consulte el manual de usuario de producto y la documentación asociada.</gco:CharacterString>
 					</mrl:description>
 					<mrl:processor>
 						<cit:CI_Responsibility>
 							<cit:role>
-								<cit:CI_RoleCode codeList="https://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_RoleCode" codeListValue="processor"/>
+								<cit:CI_RoleCode codeList="https://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/codelist/ML_gmxCodelists.xml#CI_RoleCode" codeListValue="originator"/>
 							</cit:role>
 							<cit:party>
 								<cit:CI_Organisation>
 									<cit:name>
-										<gco:CharacterString>CONAE - UDeSA</gco:CharacterString>
+										<gco:CharacterString>CONAE - SSU</gco:CharacterString>
 									</cit:name>
 									<cit:individual>
 										<cit:CI_Individual>
