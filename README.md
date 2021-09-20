@@ -174,4 +174,4 @@ This file looks like:
     5 143:63:151
     6 126:0:35
 ```
-where the first column is the ICA value and the second column is the RGB color.
+where the first column is the ICA value and the second column is the RGB color. These definitions are taken from US Environmental Protection Agency (2018), Technical Assistance Document for the Reporting of Daily Air Quality – the Air Quality Index (AQI), EPA-454/B-18-007 (https://www.airnow.gov/sites/default/files/2020-05/aqi-technical-assistance-document-sept2018.pdf).
