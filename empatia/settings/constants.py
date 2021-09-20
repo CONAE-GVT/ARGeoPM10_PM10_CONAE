@@ -61,7 +61,7 @@ ICA_PM10_METADATA_CODES = {
 # ETL's
 DEFAULT_DATE_FORMAT = "%Y-%m-%d"
 
-MODIS_REGION = {"north": -21.76, "south": -55.08, "east": -53.58, "west": -73.6}
+MODIS_REGION = {"north": -21.78, "south": -55.05, "east": -53.64, "west": -73.57}
 
 MAIAC_PRODUCT = "MCD19A2"
 MAIAC_COLLECTION = 6
@@ -76,7 +76,7 @@ XML_VIIRS_NAME = "Promedio de Abril, Mayo y Junio  {} de VNP46A1,"
 
 
 MERRA_VERSION = "5.12.4"
-MERRA_REGION = ["-55.08", "-73.6", "-21.76", "-53.58"]
+MERRA_REGION = ["-55.05", "-73.57", "-21.78", "-53.64"]
 MERRA_BASE_URL = (
     "https://goldsmr{version}.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi"
 )
