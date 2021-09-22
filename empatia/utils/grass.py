@@ -1,13 +1,16 @@
 from pathlib import Path
-from typing import Any, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import grass.script as grass
 import grass.script.setup as gsetup
 from grass.script import array as garray
 
 from empatia.settings import GISBASE, GISDB, LOCATION, MAPSET
+from empatia.settings.log import logger
 
 _ = gsetup.init(GISBASE, GISDB, LOCATION, MAPSET)
+
+MIN_PERCENTAGE_OF_VALID_DATA = 20
 
 
 def clean_db() -> None:
@@ -114,6 +117,7 @@ def get_resampling(rinput: str) -> None:
     Args:
         rinput: raster map name
     """
+    logger.info("Set resampling...")
     grass.run_command(
         "r.resamp.interp",
         input=rinput,
@@ -127,19 +131,28 @@ def refresh_region() -> None:
     """
     Refresh region
     """
+    logger.info("Refresh region...")
     grass.run_command("g.region", raster="domain", overwrite=True)
 
 
-def apply_mask(vfile: Union[str, Path]) -> None:
+def apply_mask(raster_dir: Union[str, Path]) -> None:
     """
     Creates a mask for limiting raster operations
     Args:
-        vfile: vector file path
+        raster_dir: vector dir path
     """
-    grass.run_command("v.in.ogr", input=vfile, output="mask", flags="o", overwrite=True)
+    logger.info("Applying mask...")
+    grass.run_command(
+        "v.in.ogr", input=raster_dir, output="mask", flags="o", overwrite=True
+    )
 
     grass.run_command("r.mask", vect="mask", overwrite="True")
     grass.run_command("g.region", flags="p")
+
+
+def get_stats(raster_name: str) -> Any:
+    stat_data = grass.parse_command("r.univar", flags="e", map=raster_name)
+    return stat_data
 
 
 def remove_mask() -> None:
@@ -156,6 +169,7 @@ def import_gtiff(rfile: Union[str, Path], name: str) -> None:
         rfile: raster file name
         name: raster map name
     """
+    logger.info("Importing to gtiff...")
     grass.run_command("r.in.gdal", input=rfile, output=name, flags="o", overwrite=True)
 
 
@@ -167,6 +181,7 @@ def import_netcdf(rfile: Union[str, Path], band: int, name: str) -> None:
         band: data index
         name: raster map name
     """
+    logger.info("Importing netcdf...")
     grass.run_command(
         "r.in.gdal", input=rfile, output=name, flags="o", band=band, overwrite=True
     )
@@ -265,3 +280,14 @@ def reset_color_table(rinput: str, rules: Union[str, Path]) -> None:
         map=rinput,
         rules=rules,
     )
+
+
+def enough_valid_data_has_been_collected(stats: Dict[Any, Any]) -> bool:
+    logger.info("Define if minimum amount of valid data has been collected...")
+    return True
+
+    # polygon_data = grass.parse_command("r.univar", input="MASK")
+    # p_n = polygon_data["n"] # 100%
+    # mosaic_data = grass.parse_command("r.univar", input=rinput)
+    # m_d = mosaic_data["n"]
+    # return float(m_d) >= MIN_PERCENTAGE_OF_VALID_DATA

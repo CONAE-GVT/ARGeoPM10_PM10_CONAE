@@ -8,7 +8,6 @@ from collections import defaultdict
 from typing import Any, List
 
 from pyspatialml import Raster
-from rasterio import logging
 
 from empatia.etl.merra_data_source import get_merra_files
 from empatia.etl.modis_data_source import get_modis_files
@@ -62,10 +61,12 @@ from empatia.utils.grass import (
     compute_mean,
     compute_stddev,
     discretize_values,
+    enough_valid_data_has_been_collected,
     export_multiband_gtiff,
     get_count,
     get_ranges,
     get_resampling,
+    get_stats,
     import_gtiff,
     import_netcdf,
     raster2gtiff,
@@ -75,9 +76,6 @@ from empatia.utils.grass import (
     reset_color_table,
     set_domain,
 )
-
-log = logging.getLogger()
-log.setLevel(logging.ERROR)
 
 
 def viirs_etl() -> None:
@@ -241,9 +239,12 @@ def daily_pipeline() -> None:
     logger.info("Setting domain...")
     set_domain(DOMAIN_DATA_PATH)
     apply_mask(REGION_DATA_PATH)
+    stats = get_stats("domain")
+    logger.info(f"FIRST STATS {stats}")
 
     logger.info("Processing...")
     new_uncompleted_dates = []
+    dates_to_download = ["2021-07-01"]
     for date in dates_to_download:
         try:
             logger.info(f"Date: {date}")
@@ -273,9 +274,13 @@ def daily_pipeline() -> None:
                 for modis_orbit in modis_outputs:
                     rfile, sensor, min_date = modis_orbit.values()
                     rname = f"{prefix}_{min_date.hour}_{sensor}"
-                    rofile = f"{processed_dir}{rname}"
                     import_gtiff(rfile, rname)
                     refresh_region()
+                    stats = get_stats(rname)
+                    logger.info(f"SECOND STATS {stats}")
+                    if not enough_valid_data_has_been_collected(stats):
+                        break
+                    rofile = f"{processed_dir}{rname}"
                     raster2gtiff(rname, rofile)
 
             logger.info("Downloading MERRA data...")
