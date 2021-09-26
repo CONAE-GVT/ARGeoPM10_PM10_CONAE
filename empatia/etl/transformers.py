@@ -9,6 +9,8 @@ import rasterio
 from rasterio.merge import merge
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 
+from empatia.settings.constants import CELL_NULL_VALUE
+
 
 def extract_modis_date(modis_date: str) -> Tuple[dt, str]:
     """
@@ -173,7 +175,7 @@ def modis_hdf_2_tiff(
     band_array = band_ds.ReadAsArray().astype(np.int16)
 
     # convert no_data values
-    band_array[band_array == -28672] = non_value
+    band_array[band_array == CELL_NULL_VALUE] = non_value
 
     # write raster
     bands = []

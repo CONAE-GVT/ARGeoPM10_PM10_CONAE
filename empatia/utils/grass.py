@@ -7,7 +7,7 @@ import grass.script.setup as gsetup
 from grass.script import array as garray
 
 from empatia.settings import GISBASE, GISDB, LOCATION, MAPSET
-from empatia.settings.constants import MIN_PERCENTAGE_OF_VALID_DATA, NULL_VALUE
+from empatia.settings.constants import CELL_NULL_VALUE, MIN_PERCENTAGE_OF_VALID_DATA
 from empatia.settings.log import logger
 
 _ = gsetup.init(GISBASE, GISDB, LOCATION, MAPSET)
@@ -153,13 +153,13 @@ def apply_mask(raster_dir: Union[str, Path]) -> Any:
 
 def get_number_of_null_values(raster_name: str) -> int:
     stats_data = grass.parse_command(
-        "r.stats", flags="c", sort="desc", input=raster_name, null_value=NULL_VALUE
+        "r.stats", flags="c", sort="desc", input=raster_name, null_value=CELL_NULL_VALUE
     )
 
     n_of_null_values = 0
     for key in stats_data.keys():
         logger.info(f"Current key: {key}")
-        if key.startswith("-28672"):
+        if key.startswith(str(CELL_NULL_VALUE)):
             n_of_null_values = int(key.split(" ")[1])
             break
 
