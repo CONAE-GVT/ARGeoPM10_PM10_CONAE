@@ -72,7 +72,7 @@ $ touch .git/hooks/pre-push;echo "pytest" > .git/hooks/pre-push; chmod a+x .git/
 
 - Build image
 ```
-$ ./commands/build.sh --tag <tag_name>
+$ ./commands/build_docker_image.sh --tag <tag_name>
 ```
 
 - Create container

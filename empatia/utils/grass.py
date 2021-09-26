@@ -1,16 +1,15 @@
 from pathlib import Path
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import grass.script as grass
 import grass.script.setup as gsetup
 from grass.script import array as garray
 
 from empatia.settings import GISBASE, GISDB, LOCATION, MAPSET
+from empatia.settings.constants import MIN_PERCENTAGE_OF_VALID_DATA, NULL_VALUE
 from empatia.settings.log import logger
 
 _ = gsetup.init(GISBASE, GISDB, LOCATION, MAPSET)
-
-MIN_PERCENTAGE_OF_VALID_DATA = 20
 
 
 def clean_db() -> None:
@@ -135,7 +134,7 @@ def refresh_region() -> None:
     grass.run_command("g.region", raster="domain", overwrite=True)
 
 
-def apply_mask(raster_dir: Union[str, Path]) -> None:
+def apply_mask(raster_dir: Union[str, Path]) -> Any:
     """
     Creates a mask for limiting raster operations
     Args:
@@ -147,12 +146,25 @@ def apply_mask(raster_dir: Union[str, Path]) -> None:
     )
 
     grass.run_command("r.mask", vect="mask", overwrite="True")
-    grass.run_command("g.region", flags="p")
+    region_data = grass.parse_command("g.region", flags="p")
+    return region_data
 
 
-def get_stats(raster_name: str) -> Any:
-    stat_data = grass.parse_command("r.univar", flags="e", map=raster_name)
-    return stat_data
+def get_number_of_null_values(raster_name: str) -> int:
+    stats_data = grass.parse_command(
+        "r.stats", flags="c", sort="desc", input=raster_name, null_value=NULL_VALUE
+    )
+
+    n_of_null_values = 0
+    for key in stats_data.keys():
+        logger.info(f"Current key: {key}")
+        if key.startswith("-28672"):
+            n_of_null_values = int(key.split(" ")[1])
+            break
+
+    logger.info(f"RNAME: {raster_name}")
+    logger.info(f"NULLS: {n_of_null_values}")
+    return n_of_null_values
 
 
 def remove_mask() -> None:
@@ -282,12 +294,12 @@ def reset_color_table(rinput: str, rules: Union[str, Path]) -> None:
     )
 
 
-def enough_valid_data_has_been_collected(stats: Dict[Any, Any]) -> bool:
+def enough_valid_data_has_been_collected(
+    total_cells: int, number_of_null_cells: int
+) -> bool:
     logger.info("Define if minimum amount of valid data has been collected...")
-    return True
-
-    # polygon_data = grass.parse_command("r.univar", input="MASK")
-    # p_n = polygon_data["n"] # 100%
-    # mosaic_data = grass.parse_command("r.univar", input=rinput)
-    # m_d = mosaic_data["n"]
-    # return float(m_d) >= MIN_PERCENTAGE_OF_VALID_DATA
+    percent_of_null_cells = number_of_null_cells * 100 / total_cells
+    logger.info(f"Percent of nulls cells: {percent_of_null_cells}")
+    percent_of_valid_cells = 100 - percent_of_null_cells
+    logger.info(f"Percent of valid cells: {percent_of_valid_cells}")
+    return percent_of_valid_cells >= MIN_PERCENTAGE_OF_VALID_DATA

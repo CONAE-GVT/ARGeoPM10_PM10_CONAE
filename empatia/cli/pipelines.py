@@ -5,7 +5,7 @@ import json
 import math
 import os
 from collections import defaultdict
-from typing import Any, List
+from typing import Any, Dict, List
 
 from pyspatialml import Raster
 
@@ -35,6 +35,7 @@ from empatia.settings.constants import (
     MAIAC_COLLECTION,
     MAIAC_PRODUCT,
     MERRA_DATASETS,
+    MIN_PERCENTAGE_OF_VALID_DATA,
     MODIS_REGION,
     MONTHLY_PM10_METADATA_CODES,
     MONTHLY_PRODUCT_CODES,
@@ -64,9 +65,9 @@ from empatia.utils.grass import (
     enough_valid_data_has_been_collected,
     export_multiband_gtiff,
     get_count,
+    get_number_of_null_values,
     get_ranges,
     get_resampling,
-    get_stats,
     import_gtiff,
     import_netcdf,
     raster2gtiff,
@@ -238,13 +239,11 @@ def daily_pipeline() -> None:
 
     logger.info("Setting domain...")
     set_domain(DOMAIN_DATA_PATH)
-    apply_mask(REGION_DATA_PATH)
-    stats = get_stats("domain")
-    logger.info(f"FIRST STATS {stats}")
+    result = json.loads(json.dumps(apply_mask(REGION_DATA_PATH)))
+    total_cells = get_total_cells(result)
 
     logger.info("Processing...")
     new_uncompleted_dates = []
-    dates_to_download = ["2021-07-01"]
     for date in dates_to_download:
         try:
             logger.info(f"Date: {date}")
@@ -266,6 +265,8 @@ def daily_pipeline() -> None:
             )
 
             current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
+            null_files = []  # type: ignore
+            orbits_to_clean = []
             for band, prefix in MAIAC_BANDS.items():
                 modis_outputs = get_modis_mosaic(
                     current_maiac_path, band, prefix, processed_dir
@@ -273,15 +274,36 @@ def daily_pipeline() -> None:
                 # Import to GRASS to reproject and rescale
                 for modis_orbit in modis_outputs:
                     rfile, sensor, min_date = modis_orbit.values()
-                    rname = f"{prefix}_{min_date.hour}_{sensor}"
+                    sufix = f"{min_date.hour}_{sensor}"
+                    logger.info(f"Current sufix: {sufix}")
+                    rname = f"{prefix}_{sufix}"
                     import_gtiff(rfile, rname)
                     refresh_region()
-                    stats = get_stats(rname)
-                    logger.info(f"SECOND STATS {stats}")
-                    if not enough_valid_data_has_been_collected(stats):
-                        break
+
+                    error_message_in_mosaic = (
+                        f"The current file {rname} won't be processed because the "
+                        f"{MIN_PERCENTAGE_OF_VALID_DATA}% floor of non-null cells was not reached"
+                    )
+                    if sufix in null_files:
+                        logger.info(error_message_in_mosaic)
+                        orbits_to_clean.append(modis_orbit)
+                        continue
+
+                    null_values = get_number_of_null_values(rname)
+                    if not enough_valid_data_has_been_collected(
+                        total_cells, null_values
+                    ):
+                        null_files.append(sufix)
+                        logger.info(error_message_in_mosaic)
+                        orbits_to_clean.append(modis_orbit)
+                        continue
+
+                    logger.info(f"The current file {rname} will be processed")
                     rofile = f"{processed_dir}{rname}"
                     raster2gtiff(rname, rofile)
+
+            for modis_orbit in orbits_to_clean:
+                modis_outputs.remove(modis_orbit)
 
             logger.info("Downloading MERRA data...")
             for dataset in MERRA_DATASETS:
@@ -451,6 +473,14 @@ def daily_pipeline() -> None:
     }
     with open(log_file, "w") as outfile:
         json.dump(log_data, outfile)
+
+
+def get_total_cells(result: Dict) -> int:
+    logger.info(f"RESULT-MASK: {result}")
+    cells_data = [k for k in result if k.startswith("cells")][0]
+    total_cells = int(cells_data.replace(" ", "")[6:])
+    logger.info(f"Total cells in Argentina: {total_cells}")
+    return total_cells
 
 
 def monthly_pipeline(ndays: int) -> None:
