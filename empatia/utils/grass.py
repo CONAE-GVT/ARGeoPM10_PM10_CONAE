@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any, List, Tuple, Union
 
@@ -147,7 +148,7 @@ def apply_mask(raster_dir: Union[str, Path]) -> Any:
 
     grass.run_command("r.mask", vect="mask", overwrite="True")
     region_data = grass.parse_command("g.region", flags="p")
-    return region_data
+    return json.loads(json.dumps(region_data))
 
 
 def get_number_of_null_values(raster_name: str) -> int:

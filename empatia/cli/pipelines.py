@@ -189,13 +189,12 @@ def clean_storages(ndays: int) -> None:
     remove_folders_from_date(pattern, start_date)
 
 
-def predict(model: Any, rfiles: List, ds: dt.date, outname: str) -> None:
+def predict(model: Any, rfiles: List, outname: str) -> None:
     """
     Get prediction for a given date
     Args:
         model: model object to estimate PM10
         rfile: TIFF files, model feature
-        ds: prediction date
         outname: name of the output raster map
     """
     stack = Raster(rfiles)
@@ -213,24 +212,7 @@ def daily_pipeline() -> None:
     estimator = PM10Estimator.load_model(MODEL_PATH)
     log_file = f"{PROCESSED_DATA_PATH}/log.txt"
     today = dt.datetime.today()
-    min_exec_date = dt.datetime.strftime(
-        today - dt.timedelta(days=90), DEFAULT_DATE_FORMAT
-    )
-
-    logger.info("Running ETL ...")
-    if os.path.exists(log_file):
-        with open(log_file) as json_file:
-            log_data = json.load(json_file)
-            uncompleted_dates = log_data["uncompleted_dates"]
-            date_start = dt.datetime.strptime(
-                log_data["last_execution_date"], DEFAULT_DATE_FORMAT
-            )
-    else:
-        uncompleted_dates = []
-        date_start = today
-
-    dates_to_download = list(set(uncompleted_dates + date_range(date_start, today)))
-    dates_to_download = sorted(filter(lambda x: x >= min_exec_date, dates_to_download))
+    dates_to_download = get_dates_to_download(log_file, today)
 
     logger.info("Get VIIRS data")
     viirs_path = get_viirs_dataset_path(today.year)
@@ -239,8 +221,8 @@ def daily_pipeline() -> None:
 
     logger.info("Setting domain...")
     set_domain(DOMAIN_DATA_PATH)
-    result = json.loads(json.dumps(apply_mask(REGION_DATA_PATH)))
-    total_cells = get_total_cells(result)
+    apply_mask_result = apply_mask(REGION_DATA_PATH)
+    total_cells = get_total_cells(apply_mask_result)
 
     logger.info("Processing...")
     new_uncompleted_dates = []
@@ -266,12 +248,12 @@ def daily_pipeline() -> None:
 
             current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
             null_files = []  # type: ignore
-            orbits_to_clean = []
             for band, prefix in MAIAC_BANDS.items():
                 modis_outputs = get_modis_mosaic(
                     current_maiac_path, band, prefix, processed_dir
                 )
                 # Import to GRASS to reproject and rescale
+                orbits_to_clean = []
                 for modis_orbit in modis_outputs:
                     rfile, sensor, min_date = modis_orbit.values()
                     sufix = f"{min_date.hour}_{sensor}"
@@ -302,8 +284,8 @@ def daily_pipeline() -> None:
                     rofile = f"{processed_dir}{rname}"
                     raster2gtiff(rname, rofile)
 
-            for modis_orbit in orbits_to_clean:
-                modis_outputs.remove(modis_orbit)
+                for modis_orbit in orbits_to_clean:
+                    modis_outputs.remove(modis_orbit)
 
             logger.info("Downloading MERRA data...")
             for dataset in MERRA_DATASETS:
@@ -351,7 +333,7 @@ def daily_pipeline() -> None:
                 features_files.append(str(viirs_path))
                 # Predict PM10
                 p_file = f"CONAE_MOD_CDA_ARGeoPM10_PM10_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
-                predict(estimator, features_files, date, f"{processed_dir}{p_file}")
+                predict(estimator, features_files, f"{processed_dir}{p_file}")
                 log_prediction[sensor].append(f"{processed_dir}{p_file}.tif")
                 # Get prediction file
                 pm10_file = f"{processed_dir}{p_file}.tif"
@@ -473,6 +455,26 @@ def daily_pipeline() -> None:
     }
     with open(log_file, "w") as outfile:
         json.dump(log_data, outfile)
+
+
+def get_dates_to_download(log_file: str, today: dt.datetime) -> List[str]:
+    min_exec_date = dt.datetime.strftime(
+        today - dt.timedelta(days=90), DEFAULT_DATE_FORMAT
+    )
+    logger.info("Running ETL ...")
+    if os.path.exists(log_file):
+        with open(log_file) as json_file:
+            log_data = json.load(json_file)
+            uncompleted_dates = log_data["uncompleted_dates"]
+            date_start = dt.datetime.strptime(
+                log_data["last_execution_date"], DEFAULT_DATE_FORMAT
+            )
+    else:
+        uncompleted_dates = []
+        date_start = today
+    dates_to_download = list(set(uncompleted_dates + date_range(date_start, today)))
+    dates_to_download = sorted(filter(lambda x: x >= min_exec_date, dates_to_download))
+    return dates_to_download
 
 
 def get_total_cells(result: Dict) -> int:
