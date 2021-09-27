@@ -1,4 +1,5 @@
 import datetime as dt
+import os
 
 # Model
 SENSORS = ["Terra", "Aqua"]
@@ -133,5 +134,5 @@ XML_MERRA_PRODUCT_NAMES = [
     "MERRA2_400.inst3_3d_asm_Nv.{}.SUB.nc: (PS, RH, T, U, V)",
 ]
 
-MIN_PERCENTAGE_OF_VALID_DATA = 7.0
+MIN_PERCENTAGE_OF_VALID_DATA = os.environ.get("MIN_PERCENTAGE_OF_VALID_DATA", "") or 8.0
 CELL_NULL_VALUE = -28672

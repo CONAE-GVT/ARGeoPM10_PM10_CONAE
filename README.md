@@ -75,14 +75,28 @@ $ touch .git/hooks/pre-push;echo "pytest" > .git/hooks/pre-push; chmod a+x .git/
 $ ./commands/build_docker_image.sh --tag <tag_name>
 ```
 
-- Create container
+- Create and run container
 ```
-$ docker run --name <container_name> --env-file .env-docker -it empatia:<tag_name> /bin/bash
+$ docker run --name <container_name> --env-file .env -it empatia:<tag_name> /bin/bash
 ```
+
+- Create and run container defining new environment variables
+```
+echo "MIN_PERCENTAGE_OF_VALID_DATA=8.0" >> .env
+$ docker run --name <container_name> --env-file .env -it empatia:<tag_name> /bin/bash
+```
+
 
 - Run container
 ```
 $ docker start <container_name>
+```
+
+- Run daily_pipeline in container
+```
+cd $HOME
+touch conae.logs
+$ docker exec -it <container_name> empatia compute_daily_products > $HOME/conae.logs
 ```
 
 - Enter to container
