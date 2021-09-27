@@ -3,14 +3,14 @@ Support system for decision making in air quality management
 
 ## Requirements
  - Python >= 3.7.0
- - GRASS GIS >= 7.6
+ - GRASS GIS >= 7.6 (GRASS GIS should be updated to >= 7.8, though it is not yet tested for this implementation)
  - Any flavour of Conda. We recommend [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
  - A version Docker on your OS
 
 
 ## Local Set up
 
-In order to provide environment variables to the project it is needed a `.env` file in the root of the project.
+In order to provide environment variables to the project, it is needed a `.env` file in the root of the project.
 Copy the `.env.template` as `.env` and replace the placeholders with real values.
 
 ```
@@ -122,51 +122,64 @@ where `<uid>` is your user name and `<password>` is your Earthdata Login passwor
 chmod 0600 .netrc
 ```
 
+## Get the model file
+
+To run the model in your own working station or server, you should obtain the model file from the next FTP access:
+
+```
+FTP: ftp4.conae.gov.ar
+username: prod11
+password: aB8AOQKZ
+```
+
+Download the `model_2021-05-13.pkl` file and save it into the `./data/model/` directory.
+
+
 ## CLIs
 
 ```
 $ empatia run_viirs_etl
 ```
 
-It runs pipeline to get the mean of April, May and June of the product `VNP46A1`.
+It runs pipeline to get the nocturne ligths mean of April, May and June from the `VNP46A1` daily dataset.
 
 ```
 $ empatia compute_daily_products
 ```
 
 It runs pipeline to get  the following daily products:
-* PM10 and QA_AOD per sensor orbit
-* ICA PM10
+* PM10 and QA_AOD per sensor and orbit.
+* ICA PM10 (daily air quality index from PM10).
 
-for the current date and tries to get these missing products for previous days.
+for the current date and other missing data for previous days.
 
 ```
 $ empatia compute_monthly_products --ndays 30
 ```
 
-It runs pipeline to get the following monthly statisticians:
-* Mean
-* Standar Desviation
-* N
+It runs pipeline to get the following monthly statistics:
+* Monthly Mean
+* Monthly Standard Deviation
+* Monthly N data considered
 
-from the given predictions for the month of: `current date - ndays`
+from the given predictions for the month of: `current date - ndays`.
 
 ```
 $ empatia clean_all --ndays 60
 ```
 
-It cleans GRASS DB and removes obsolete files/folder created before `current date - ndays`
+It cleans GRASS DB and removes obsolete files/folder created before `current date - ndays`.
 
 ```
 $ empatia run_training
 ```
 
-It runs PM1O model training
+It runs PM1O model training.
 
 
-## How to set custom color palletes
+## How to set custom color scale for PNG files
 
-* If you want to change the PM10 color pallete, you need to change the following file: `empatia/data/utils/pm10_color_rules.txt`.
+* If you want to change the PM10 color scale, change the following file: `empatia/data/utils/pm10_color_rules.txt`.
 This file looks like:
 ```
     50 26:150:65
@@ -178,7 +191,7 @@ This file looks like:
 where the first column is the PM10 value and the second column is the RGB color.
 
 
-* If you want to change the ICA color pallete, you need to change the following file: `empatia/data/utils/ica_color_rules.txt`.
+* If you want to change the ICA color scale, you need to change the following file: `empatia/data/utils/ica_color_rules.txt`.
 This file looks like:
 ```
     1 0:228:0
