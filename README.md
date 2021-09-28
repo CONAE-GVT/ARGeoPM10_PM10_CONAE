@@ -128,8 +128,8 @@ To run the model in your own working station or server, you should obtain the mo
 
 ```
 FTP: ftp4.conae.gov.ar
-username: prod11
-password: aB8AOQKZ
+username: daye
+password: dE#2810
 ```
 
 Download the `model_2021-05-13.pkl` file and save it into the `./data/model/` directory.
