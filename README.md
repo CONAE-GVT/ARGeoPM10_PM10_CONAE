@@ -86,17 +86,9 @@ echo "MIN_PERCENTAGE_OF_VALID_DATA=8.0" >> .env
 $ docker run --name <container_name> --env-file .env -it empatia:<tag_name> /bin/bash
 ```
 
-
 - Run container
 ```
 $ docker start <container_name>
-```
-
-- Run daily_pipeline in container
-```
-cd $HOME
-touch conae.logs
-$ docker exec -it <container_name> empatia compute_daily_products > $HOME/conae.logs
 ```
 
 - Enter to container
@@ -107,9 +99,6 @@ $ docker exec -it <container_name> /bin/bash
  - Create a .netrc file in home directory.
 ```
 $ cd
-```
-
-```
 $ touch .netrc
 ```
 
@@ -120,7 +109,17 @@ where `<uid>` is your user name and `<password>` is your Earthdata Login passwor
 
 ```
 chmod 0600 .netrc
+
 ```
+
+- Run daily_pipeline in container
+```
+cd $HOME
+touch conae.logs
+$ docker exec -it <container_name> empatia compute_daily_products > $HOME/conae.logs
+```
+
+
 
 ## Get the model file
 
