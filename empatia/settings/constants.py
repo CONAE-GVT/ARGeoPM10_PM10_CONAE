@@ -53,11 +53,13 @@ MONTHLY_PM10_METADATA_CODES = {
         "pm10_product_names": "<!--todos los productos PM10-->",
     },
 }
+PM10_PREFIX_FILENAME = "CONAE_MOD_CDA_ARGeoPM10_PM10"
+
 ICA_PM10_METADATA_CODES = {
     **BASE_METADATA_CODES,
     **{"pm10_product_names": "<!--todos los productos PM10-->"},
 }
-
+ICA_PATH = "CONAE_MOD_CDA_ARGeoPM10_ICAPM10"
 
 # ETL's
 DEFAULT_DATE_FORMAT = "%Y-%m-%d"
@@ -81,6 +83,7 @@ MERRA_REGION = ["-55.05", "-73.57", "-21.78", "-53.64"]
 MERRA_BASE_URL = (
     "https://goldsmr{version}.gesdisc.eosdis.nasa.gov/daac-bin/OTF/HTTP_services.cgi"
 )
+MERRA_SHORTNAME = "M2I3NVASM"
 
 MERRA_DATASETS = [
     {
@@ -118,7 +121,7 @@ MERRA_DATASETS = [
     {
         "base_url": MERRA_BASE_URL.format(version=5),
         "product": "MERRA2_400.inst3_3d_asm_Nv",
-        "shortname": "M2I3NVASM",
+        "shortname": MERRA_SHORTNAME,
         "region": MERRA_REGION,
         "start_hour": "12:00:00",
         "end_hour": "21:00:59",
@@ -134,5 +137,7 @@ XML_MERRA_PRODUCT_NAMES = [
     "MERRA2_400.inst3_3d_asm_Nv.{}.SUB.nc: (PS, RH, T, U, V)",
 ]
 
-MIN_PERCENTAGE_OF_VALID_DATA = os.environ.get("MIN_PERCENTAGE_OF_VALID_DATA", "") or 8.0
+MIN_PERCENTAGE_OF_VALID_DATA = (
+    float(os.environ.get("MIN_PERCENTAGE_OF_VALID_DATA", 0.0)) or 8.0
+)
 CELL_NULL_VALUE = -28672
