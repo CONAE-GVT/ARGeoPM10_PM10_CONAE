@@ -5,7 +5,7 @@ import json
 import math
 import os
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, DefaultDict, Dict, List, Tuple
 
 from pyspatialml import Raster
 
@@ -30,16 +30,19 @@ from empatia.settings import (
 from empatia.settings.constants import (
     DAILY_PM10_METADATA_CODES,
     DEFAULT_DATE_FORMAT,
+    ICA_PATH,
     ICA_PM10_METADATA_CODES,
     MAIAC_BANDS,
     MAIAC_COLLECTION,
     MAIAC_PRODUCT,
     MERRA_DATASETS,
+    MERRA_SHORTNAME,
     MIN_PERCENTAGE_OF_VALID_DATA,
     MODIS_REGION,
     MONTHLY_PM10_METADATA_CODES,
     MONTHLY_PRODUCT_CODES,
     NODATA,
+    PM10_PREFIX_FILENAME,
     SENSORS,
     VIIRS_COLLECTION,
     VIIRS_DATE_END,
@@ -227,10 +230,9 @@ def daily_pipeline() -> None:
     logger.info("Processing...")
     new_uncompleted_dates = []
     for date in dates_to_download:
+        processed_dir = f"{PROCESSED_DATA_PATH}/{date}/"
         try:
             logger.info(f"Date: {date}")
-
-            processed_dir = f"{PROCESSED_DATA_PATH}/{date}/"
             if not os.path.exists(processed_dir):
                 os.mkdir(processed_dir)
 
@@ -238,223 +240,268 @@ def daily_pipeline() -> None:
             if not os.path.exists(prediction_dir):
                 os.mkdir(prediction_dir)
 
-            logger.info("Downloading MAIAC data...")
-            get_modis_files(
-                MAIAC_PRODUCT,
-                MAIAC_COLLECTION,
-                start_date=date,
-                **MODIS_REGION,  # type: ignore
-            )
-
             current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
-            null_files = []  # type: ignore
-            for band, prefix in MAIAC_BANDS.items():
-                modis_outputs = get_modis_mosaic(
-                    current_maiac_path, band, prefix, processed_dir
-                )
-                # Import to GRASS to reproject and rescale
-                orbits_to_clean = []
-                for modis_orbit in modis_outputs:
-                    rfile, sensor, min_date = modis_orbit.values()
-                    sufix = f"{min_date.hour}_{sensor}"
-                    logger.info(f"Current sufix: {sufix}")
-                    rname = f"{prefix}_{sufix}"
-                    import_gtiff(rfile, rname)
-                    refresh_region()
-
-                    error_message_in_mosaic = (
-                        f"The current file {rname} won't be processed because the "
-                        f"{MIN_PERCENTAGE_OF_VALID_DATA}% floor of non-null cells was not reached"
-                    )
-                    if sufix in null_files:
-                        logger.info(error_message_in_mosaic)
-                        orbits_to_clean.append(modis_orbit)
-                        continue
-
-                    null_values = get_number_of_null_values(rname)
-                    if not enough_valid_data_has_been_collected(
-                        total_cells, null_values
-                    ):
-                        null_files.append(sufix)
-                        logger.info(error_message_in_mosaic)
-                        orbits_to_clean.append(modis_orbit)
-                        continue
-
-                    logger.info(f"The current file {rname} will be processed")
-                    rofile = f"{processed_dir}{rname}"
-                    raster2gtiff(rname, rofile)
-
-                for modis_orbit in orbits_to_clean:
-                    modis_outputs.remove(modis_orbit)
+            logger.info("Downloading MAIAC data...")
+            modis_outputs = process_modis_data(
+                current_maiac_path, date, processed_dir, total_cells
+            )
 
             logger.info("Downloading MERRA data...")
-            for dataset in MERRA_DATASETS:
-                shortname = dataset.get("shortname", "")
-                product = dataset.get("product", "")
-                variables = dataset.get("variables", [])
-                get_merra_files(date, **dataset)  # type: ignore
-                # Import to GRASS to reproject and rescale
-                for modis_orbit, var in itertools.product(modis_outputs, variables):
-                    _, sensor, min_date = modis_orbit.values()
-                    current_merra_path = (
-                        f"NETCDF:{MERRA_DATASET_PATH}/{shortname}/"
-                        f"{date}/{product}.nc:{var}"
-                    )
-                    merra_band = (int(min_date.hour) % 12) + 1
-                    if shortname == "M2I3NVASM":
-                        merra_band = (math.trunc(int(min_date.hour) / 3) + 1) - 4
-
-                    rname = f"{var}_{min_date.hour}_{sensor}"
-                    rofile = f"{processed_dir}{rname}"
-                    remove_mask()
-                    try:
-                        import_netcdf(current_merra_path, merra_band, rname)
-                    except Exception:
-                        os.remove(
-                            f"{MERRA_DATASET_PATH}/{shortname}/{date}/{product}.nc"
-                        )
-                        get_merra_files(date, **dataset)  # type: ignore
-                        import_netcdf(current_merra_path, merra_band, rname)
-
-                    get_resampling(rname)
-                    apply_mask(REGION_DATA_PATH)
-                    refresh_region()
-                    raster2gtiff(rname, rofile)
+            process_merra_data(date, modis_outputs, processed_dir)
 
             logger.info("Computing PM10...")
-            log_prediction = defaultdict(list)  # type: ignore
-            creation_date = dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
-            for modis_orbit in modis_outputs:
-                aod_file, sensor, min_date = modis_orbit.values()
-                pattern = f"{processed_dir}*_{min_date.hour}_{sensor}.tif"
-                features_files = sorted(glob.glob(pattern))
-                features_files.pop(1)  # remove AOD_QA
-                features_files.insert(4, str(DOMAIN_DATA_PATH))
-                features_files.append(str(viirs_path))
-                # Predict PM10
-                p_file = f"CONAE_MOD_CDA_ARGeoPM10_PM10_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
-                predict(estimator, features_files, f"{processed_dir}{p_file}")
-                log_prediction[sensor].append(f"{processed_dir}{p_file}.tif")
-                # Get prediction file
-                pm10_file = f"{processed_dir}{p_file}.tif"
-                pm10_band_name = "PM10"
-                import_gtiff(pm10_file, pm10_band_name)
-                _max, _min = get_ranges(pm10_band_name)
-                reset_color_table(pm10_band_name, PM10_COLOR_RULES_PATH)
-                # Get AOD associated
-                aod_band_name = "QA_AOD"
-                import_gtiff(aod_file, aod_band_name)
-                _max2, _min2 = get_ranges(aod_band_name)
-                # Export Gtiff
-                p_dir = f"{prediction_dir}{p_file}/"
-                if not os.path.exists(p_dir):
-                    os.mkdir(p_dir)
-
-                refresh_region()
-                export_multiband_gtiff(
-                    [pm10_band_name, aod_band_name], p_file, f"{p_dir}{p_file}", NODATA
-                )
-                # Create XML
-                maiac_files = [
-                    os.path.basename(x) for x in glob.glob(f"{current_maiac_path}*.hdf")
-                ]
-                merra_files = [
-                    fname.format(min_date.strftime("%Y%m%d"))
-                    for fname in XML_MERRA_PRODUCT_NAMES
-                ]
-                metadata = dict(
-                    zip(
-                        DAILY_PM10_METADATA_CODES.values(),
-                        [
-                            p_file,
-                            creation_date,
-                            _max,
-                            _min,
-                            _max2,
-                            _min2,
-                            ",".join(maiac_files),
-                            ",".join(merra_files),
-                            XML_VIIRS_NAME.format(min_date.year),
-                        ],
-                    )
-                )
-                create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{p_dir}{p_file}")
-                # Export PNG
-                raster2png(pm10_band_name, f"{p_dir}{p_file}")
-                # Zip directory with all product
-                zip_directory(p_dir, p_dir)
+            creation_date, log_prediction, min_date = computing_pm_10(
+                current_maiac_path,
+                modis_outputs,
+                estimator,
+                prediction_dir,
+                processed_dir,
+                viirs_path,
+            )
 
             logger.info("Computing ICA...")
-            # Import to GRASS
-            pattern = f"{processed_dir}CONAE_MOD_CDA_ARGeoPM10_PM10_*.tif"
-            daily_predictions = sorted(glob.glob(pattern))
-            products = []
-            ica_rasters = []
-            for e, dp in enumerate(daily_predictions):
-                rname = f"daily_prediction_{e}"
-                ica_rasters.append(rname)
-                import_gtiff(dp, rname)
-                products.append(dp.split("/")[-1].split(".")[0])
-
-            refresh_region()
-            ica_file = (
-                f"CONAE_MOD_CDA_ARGeoPM10_ICAPM10_{min_date.strftime('%Y%m%d')}_v001"
+            computing_ica(
+                creation_date, log_prediction, min_date, prediction_dir, processed_dir
             )
-            p_dir = f"{prediction_dir}{ica_file}/"
-            if not os.path.exists(p_dir):
-                os.mkdir(p_dir)
-            # Compute daily mean
-            compute_mean(ica_rasters, "daily_ica")
-            # Reclassified prediction
-            rname = "ICA"
-            discretize_values("daily_ica", get_qa_class, rname)
-            _max, _min = get_ranges(rname)
-            # Export Gtiff
-            reset_color_table(rname, ICA_COLOR_RULES_PATH)
-            export_multiband_gtiff([rname], ica_file, f"{p_dir}{ica_file}", NODATA)
-            # raster2gtiff(rname, f"{p_dir}{ica_file}")
-            # Create XML
-            metadata = dict(
-                zip(
-                    ICA_PM10_METADATA_CODES.values(),
-                    [
-                        ica_file,
-                        creation_date,
-                        _max,
-                        _min,
-                        _max,
-                        _min,
-                        ",".join(products),
-                    ],
-                )
-            )
-            create_xml(ICA_TEMPLATE_PATH, metadata, f"{p_dir}{ica_file}")
-            # Export PNG
-            raster2png(rname, f"{p_dir}{ica_file}")
-            # Zip directory with all product
-            zip_directory(p_dir, p_dir)
-
-            with open(f"{prediction_dir}/log.txt", "w") as outfile:
-                json.dump(log_prediction, outfile, indent=4)
 
         except Exception as e:
             logger.error(f"Uncompleted process: {e}")
             new_uncompleted_dates.append(date)
 
-        # Delete intermediate files
-        files_to_del = glob.glob(f"{processed_dir}*.tif")
-        files_to_preserve = glob.glob(f"{processed_dir}CONAE*")
-        files_to_del = set(files_to_del) - set(files_to_preserve)  # type: ignore
-        for ftd in files_to_del:
-            os.remove(ftd)
+        delete_intermediate_files(processed_dir)
 
-    # Logger data
+    update_log_data(dates_to_download, log_file, new_uncompleted_dates)
+
+
+def update_log_data(
+    dates_to_download: List[str], log_file: str, new_uncompleted_dates: List[str]
+) -> None:
+    last_execution_date = dates_to_download[-1]
     log_data = {
-        "last_execution_date": date,
+        "last_execution_date": last_execution_date,
         "uncompleted_dates": sorted(set(new_uncompleted_dates)),
     }
     with open(log_file, "w") as outfile:
         json.dump(log_data, outfile)
+
+
+def delete_intermediate_files(processed_dir: str) -> None:
+    files_to_del = glob.glob(f"{processed_dir}*.tif")
+    files_to_preserve = glob.glob(f"{processed_dir}CONAE*")
+    files_to_del = set(files_to_del) - set(files_to_preserve)  # type: ignore
+    for ftd in files_to_del:
+        os.remove(ftd)
+
+
+def computing_ica(
+    creation_date: str,
+    log_prediction: DefaultDict[Any, List],
+    min_date: dt.date,
+    prediction_dir: str,
+    processed_dir: str,
+) -> None:
+    pattern = f"{processed_dir}{PM10_PREFIX_FILENAME}_*.tif"
+    daily_predictions = sorted(glob.glob(pattern))
+    products = []
+    ica_rasters = []
+    for e, dp in enumerate(daily_predictions):
+        rname = f"daily_prediction_{e}"
+        ica_rasters.append(rname)
+        # Import to GRASS
+        import_gtiff(dp, rname)
+        products.append(dp.split("/")[-1].split(".")[0])
+    refresh_region()
+    ica_file = f"{ICA_PATH}_{min_date.strftime('%Y%m%d')}_v001"
+    p_dir = f"{prediction_dir}{ica_file}/"
+    if not os.path.exists(p_dir):
+        os.mkdir(p_dir)
+    # Compute daily mean
+    compute_mean(ica_rasters, "daily_ica")
+    # Reclassified prediction
+    rname = "ICA"
+    discretize_values("daily_ica", get_qa_class, rname)
+    _max, _min = get_ranges(rname)
+    # Export Gtiff
+    reset_color_table(rname, ICA_COLOR_RULES_PATH)
+    export_multiband_gtiff([rname], ica_file, f"{p_dir}{ica_file}", NODATA)
+    # raster2gtiff(rname, f"{p_dir}{ica_file}")
+    # Create XML
+    metadata = dict(
+        zip(
+            ICA_PM10_METADATA_CODES.values(),
+            [
+                ica_file,
+                creation_date,
+                _max,
+                _min,
+                _max,
+                _min,
+                ",".join(products),
+            ],
+        )
+    )
+    create_xml(ICA_TEMPLATE_PATH, metadata, f"{p_dir}{ica_file}")
+    # Export PNG
+    raster2png(rname, f"{p_dir}{ica_file}")
+    # Zip directory with all product
+    zip_directory(p_dir, p_dir)
+    with open(f"{prediction_dir}/log.txt", "w") as outfile:
+        json.dump(log_prediction, outfile, indent=4)
+
+
+def computing_pm_10(
+    current_maiac_path: str,
+    modis_outputs: List[Any],
+    estimator: str,
+    prediction_dir: str,
+    processed_dir: str,
+    viirs_path: str,
+) -> Tuple[str, DefaultDict[Any, List], dt.datetime]:
+    log_prediction = defaultdict(list)  # type: ignore
+    creation_date = dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
+    for modis_orbit in modis_outputs:
+        aod_file, sensor, min_date = modis_orbit.values()
+        pattern = f"{processed_dir}*_{min_date.hour}_{sensor}.tif"
+        features_files = sorted(glob.glob(pattern))
+        features_files.pop(1)  # remove AOD_QA
+        features_files.insert(4, str(DOMAIN_DATA_PATH))
+        features_files.append(str(viirs_path))
+        # Predict PM10
+        p_file = f"{PM10_PREFIX_FILENAME}_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
+        predict(estimator, features_files, f"{processed_dir}{p_file}")
+        log_prediction[sensor].append(f"{processed_dir}{p_file}.tif")
+        # Get prediction file
+        pm10_file = f"{processed_dir}{p_file}.tif"
+        pm10_band_name = "PM10"
+        import_gtiff(pm10_file, pm10_band_name)
+        _max, _min = get_ranges(pm10_band_name)
+        reset_color_table(pm10_band_name, PM10_COLOR_RULES_PATH)
+        # Get AOD associated
+        aod_band_name = "QA_AOD"
+        import_gtiff(aod_file, aod_band_name)
+        _max2, _min2 = get_ranges(aod_band_name)
+        # Export Gtiff
+        p_dir = f"{prediction_dir}{p_file}/"
+        if not os.path.exists(p_dir):
+            os.mkdir(p_dir)
+
+        refresh_region()
+        export_multiband_gtiff(
+            [pm10_band_name, aod_band_name], p_file, f"{p_dir}{p_file}", NODATA
+        )
+        # Create XML
+        maiac_files = [
+            os.path.basename(x) for x in glob.glob(f"{current_maiac_path}*.hdf")
+        ]
+        merra_files = [
+            fname.format(min_date.strftime("%Y%m%d"))
+            for fname in XML_MERRA_PRODUCT_NAMES
+        ]
+        metadata = dict(
+            zip(
+                DAILY_PM10_METADATA_CODES.values(),
+                [
+                    p_file,
+                    creation_date,
+                    _max,
+                    _min,
+                    _max2,
+                    _min2,
+                    ",".join(maiac_files),
+                    ",".join(merra_files),
+                    XML_VIIRS_NAME.format(min_date.year),
+                ],
+            )
+        )
+        create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{p_dir}{p_file}")
+        # Export PNG
+        raster2png(pm10_band_name, f"{p_dir}{p_file}")
+        # Zip directory with all product
+        zip_directory(p_dir, p_dir)
+    return creation_date, log_prediction, min_date
+
+
+def process_merra_data(date: str, modis_outputs: List[Any], processed_dir: str) -> None:
+    for dataset in MERRA_DATASETS:
+        shortname = dataset.get("shortname", "")
+        product = dataset.get("product", "")
+        variables = dataset.get("variables", [])
+        get_merra_files(date, **dataset)  # type: ignore
+        # Import to GRASS to reproject and rescale
+        for modis_orbit, var in itertools.product(modis_outputs, variables):
+            _, sensor, min_date = modis_orbit.values()
+            current_merra_path = (
+                f"NETCDF:{MERRA_DATASET_PATH}/{shortname}/" f"{date}/{product}.nc:{var}"
+            )
+            merra_band = (int(min_date.hour) % 12) + 1
+            if shortname == MERRA_SHORTNAME:
+                merra_band = (math.trunc(int(min_date.hour) / 3) + 1) - 4
+
+            rname = f"{var}_{min_date.hour}_{sensor}"
+            rofile = f"{processed_dir}{rname}"
+            remove_mask()
+            try:
+                import_netcdf(current_merra_path, merra_band, rname)
+            except Exception:
+                os.remove(f"{MERRA_DATASET_PATH}/{shortname}/{date}/{product}.nc")
+                get_merra_files(date, **dataset)  # type: ignore
+                import_netcdf(current_merra_path, merra_band, rname)
+
+            get_resampling(rname)
+            apply_mask(REGION_DATA_PATH)
+            refresh_region()
+            raster2gtiff(rname, rofile)
+    return None
+
+
+def process_modis_data(
+    current_maiac_path: str, date: str, processed_dir: str, total_cells: int
+) -> List[Any]:
+    get_modis_files(
+        MAIAC_PRODUCT,
+        MAIAC_COLLECTION,
+        start_date=date,
+        **MODIS_REGION,  # type: ignore
+    )
+    null_files = []  # type: ignore
+    modis_outputs = []  # type: ignore
+    for band, prefix in MAIAC_BANDS.items():
+        modis_outputs = get_modis_mosaic(
+            current_maiac_path, band, prefix, processed_dir
+        )
+        # Import to GRASS to reproject and rescale
+        orbits_to_clean = []
+        for modis_orbit in modis_outputs:
+            rfile, sensor, min_date = modis_orbit.values()
+            sufix = f"{min_date.hour}_{sensor}"
+            logger.info(f"Current sufix: {sufix}")
+            rname = f"{prefix}_{sufix}"
+            import_gtiff(rfile, rname)
+            refresh_region()
+
+            error_message_in_mosaic = (
+                f"The current file {rname} won't be processed because the "
+                f"{MIN_PERCENTAGE_OF_VALID_DATA}% floor of non-null cells was not reached"
+            )
+            if sufix in null_files:
+                logger.info(error_message_in_mosaic)
+                orbits_to_clean.append(modis_orbit)
+                continue
+
+            null_values = get_number_of_null_values(rname)
+            if not enough_valid_data_has_been_collected(total_cells, null_values):
+                null_files.append(sufix)
+                logger.info(error_message_in_mosaic)
+                orbits_to_clean.append(modis_orbit)
+                continue
+
+            logger.info(f"The current file {rname} will be processed")
+            rofile = f"{processed_dir}{rname}"
+            raster2gtiff(rname, rofile)
+
+        for modis_orbit in orbits_to_clean:
+            modis_outputs.remove(modis_orbit)
+    return modis_outputs
 
 
 def get_dates_to_download(log_file: str, today: dt.datetime) -> List[str]:
@@ -550,8 +597,6 @@ def monthly_pipeline(ndays: int) -> None:
         _max3, _min3 = get_ranges(rname)
         group.append(rname)
 
-        #
-
         # Define file name and metadata
         refresh_region()
         pcode = MONTHLY_PRODUCT_CODES[sensor]
@@ -559,9 +604,7 @@ def monthly_pipeline(ndays: int) -> None:
         creation_date = dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
         first_day = "".join(daily_preds[sensor][0].split("/")[-2].split("-"))
         last_day = "".join(daily_preds[sensor][-1].split("/")[-2].split("-"))
-        group_name = (
-            f"CONAE_MOD_CDA_ARGeoPM10_PM10m_{first_day}_{last_day}_{pcode}_v001"
-        )
+        group_name = f"{PM10_PREFIX_FILENAME}m_{first_day}_{last_day}_{pcode}_v001"
         metadata = dict(
             zip(
                 MONTHLY_PM10_METADATA_CODES.values(),
