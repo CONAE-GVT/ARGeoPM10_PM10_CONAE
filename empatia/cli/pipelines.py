@@ -218,9 +218,9 @@ def daily_pipeline() -> None:
     dates_to_download = get_dates_to_download(log_file, today)
 
     logger.info("Get VIIRS data")
-    viirs_path = get_viirs_dataset_path(today.year)
-    if not os.path.exists(viirs_path):
-        viirs_path = get_viirs_dataset_path(today.year - 1)
+    viirs_file_path = get_viirs_dataset_path(today.year)
+    if not os.path.exists(viirs_file_path):
+        viirs_file_path = get_viirs_dataset_path(today.year - 1)
 
     logger.info("Setting domain...")
     set_domain(DOMAIN_DATA_PATH)
@@ -230,45 +230,49 @@ def daily_pipeline() -> None:
     logger.info("Processing...")
     new_uncompleted_dates = []
     for date in dates_to_download:
-        processed_dir = f"{PROCESSED_DATA_PATH}/{date}/"
+        logger.info(f"Date: {date}")
+        processed_dir_path = f"{PROCESSED_DATA_PATH}/{date}/"
         try:
-            logger.info(f"Date: {date}")
-            if not os.path.exists(processed_dir):
-                os.mkdir(processed_dir)
+            if not os.path.exists(processed_dir_path):
+                os.mkdir(processed_dir_path)
 
-            prediction_dir = f"{PREDICTION_DATA_PATH}/{date}/"
-            if not os.path.exists(prediction_dir):
-                os.mkdir(prediction_dir)
+            prediction_dir_path = f"{PREDICTION_DATA_PATH}/{date}/"
+            if not os.path.exists(prediction_dir_path):
+                os.mkdir(prediction_dir_path)
 
-            current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
             logger.info("Downloading MAIAC data...")
+            current_maiac_path = f"{MODIS_DATASET_PATH}/{MAIAC_PRODUCT}/{date}/"
             modis_outputs = process_modis_data(
-                current_maiac_path, date, processed_dir, total_cells
+                current_maiac_path, date, processed_dir_path, total_cells
             )
 
             logger.info("Downloading MERRA data...")
-            process_merra_data(date, modis_outputs, processed_dir)
+            process_merra_data(date, modis_outputs, processed_dir_path)
 
             logger.info("Computing PM10...")
             creation_date, log_prediction, min_date = computing_pm_10(
                 current_maiac_path,
                 modis_outputs,
                 estimator,
-                prediction_dir,
-                processed_dir,
-                viirs_path,
+                prediction_dir_path,
+                processed_dir_path,
+                viirs_file_path,
             )
 
             logger.info("Computing ICA...")
             computing_ica(
-                creation_date, log_prediction, min_date, prediction_dir, processed_dir
+                creation_date,
+                log_prediction,
+                min_date,
+                prediction_dir_path,
+                processed_dir_path,
             )
 
         except Exception as e:
             logger.error(f"Uncompleted process: {e}")
             new_uncompleted_dates.append(date)
 
-        delete_intermediate_files(processed_dir)
+        delete_intermediate_files(processed_dir_path)
 
     update_log_data(dates_to_download, log_file, new_uncompleted_dates)
 
@@ -285,9 +289,9 @@ def update_log_data(
         json.dump(log_data, outfile)
 
 
-def delete_intermediate_files(processed_dir: str) -> None:
-    files_to_del = glob.glob(f"{processed_dir}*.tif")
-    files_to_preserve = glob.glob(f"{processed_dir}CONAE*")
+def delete_intermediate_files(processed_dir_path: str) -> None:
+    files_to_del = glob.glob(f"{processed_dir_path}*.tif")
+    files_to_preserve = glob.glob(f"{processed_dir_path}CONAE*")
     files_to_del = set(files_to_del) - set(files_to_preserve)  # type: ignore
     for ftd in files_to_del:
         os.remove(ftd)
@@ -297,10 +301,10 @@ def computing_ica(
     creation_date: str,
     log_prediction: DefaultDict[Any, List],
     min_date: dt.date,
-    prediction_dir: str,
-    processed_dir: str,
+    prediction_dir_path: str,
+    processed_dir_path: str,
 ) -> None:
-    pattern = f"{processed_dir}{PM10_PREFIX_FILENAME}_*.tif"
+    pattern = f"{processed_dir_path}{PM10_PREFIX_FILENAME}_*.tif"
     daily_predictions = sorted(glob.glob(pattern))
     products = []
     ica_rasters = []
@@ -312,9 +316,9 @@ def computing_ica(
         products.append(dp.split("/")[-1].split(".")[0])
     refresh_region()
     ica_file = f"{ICA_PATH}_{min_date.strftime('%Y%m%d')}_v001"
-    p_dir = f"{prediction_dir}{ica_file}/"
-    if not os.path.exists(p_dir):
-        os.mkdir(p_dir)
+    ica_dir = f"{prediction_dir_path}{ica_file}/"
+    if not os.path.exists(ica_dir):
+        os.mkdir(ica_dir)
     # Compute daily mean
     compute_mean(ica_rasters, "daily_ica")
     # Reclassified prediction
@@ -323,7 +327,7 @@ def computing_ica(
     _max, _min = get_ranges(rname)
     # Export Gtiff
     reset_color_table(rname, ICA_COLOR_RULES_PATH)
-    export_multiband_gtiff([rname], ica_file, f"{p_dir}{ica_file}", NODATA)
+    export_multiband_gtiff([rname], ica_file, f"{ica_dir}{ica_file}", NODATA)
     # raster2gtiff(rname, f"{p_dir}{ica_file}")
     # Create XML
     metadata = dict(
@@ -340,12 +344,12 @@ def computing_ica(
             ],
         )
     )
-    create_xml(ICA_TEMPLATE_PATH, metadata, f"{p_dir}{ica_file}")
+    create_xml(ICA_TEMPLATE_PATH, metadata, f"{ica_dir}{ica_file}")
     # Export PNG
-    raster2png(rname, f"{p_dir}{ica_file}")
+    raster2png(rname, f"{ica_dir}{ica_file}")
     # Zip directory with all product
-    zip_directory(p_dir, p_dir)
-    with open(f"{prediction_dir}/log.txt", "w") as outfile:
+    zip_directory(ica_dir, ica_dir)
+    with open(f"{prediction_dir_path}/log.txt", "w") as outfile:
         json.dump(log_prediction, outfile, indent=4)
 
 
@@ -353,25 +357,27 @@ def computing_pm_10(
     current_maiac_path: str,
     modis_outputs: List[Any],
     estimator: str,
-    prediction_dir: str,
-    processed_dir: str,
-    viirs_path: str,
+    prediction_dir_path: str,
+    processed_dir_path: str,
+    viirs_file_path: str,
 ) -> Tuple[str, DefaultDict[Any, List], dt.datetime]:
     log_prediction = defaultdict(list)  # type: ignore
     creation_date = dt.datetime.today().strftime("%Y-%m-%dT%H:%M:%S")
     for modis_orbit in modis_outputs:
         aod_file, sensor, min_date = modis_orbit.values()
-        pattern = f"{processed_dir}*_{min_date.hour}_{sensor}.tif"
+        pattern = f"{processed_dir_path}*_{min_date.hour}_{sensor}.tif"
         features_files = sorted(glob.glob(pattern))
         features_files.pop(1)  # remove AOD_QA
         features_files.insert(4, str(DOMAIN_DATA_PATH))
-        features_files.append(str(viirs_path))
+        features_files.append(str(viirs_file_path))
         # Predict PM10
-        p_file = f"{PM10_PREFIX_FILENAME}_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
-        predict(estimator, features_files, f"{processed_dir}{p_file}")
-        log_prediction[sensor].append(f"{processed_dir}{p_file}.tif")
+        pm10_file_path = (
+            f"{PM10_PREFIX_FILENAME}_{min_date.strftime('%Y%m%d_%H%M%S')}_v001"
+        )
+        predict(estimator, features_files, f"{processed_dir_path}{pm10_file_path}")
+        pm10_file = f"{processed_dir_path}{pm10_file_path}.tif"
+        log_prediction[sensor].append(pm10_file)
         # Get prediction file
-        pm10_file = f"{processed_dir}{p_file}.tif"
         pm10_band_name = "PM10"
         import_gtiff(pm10_file, pm10_band_name)
         _max, _min = get_ranges(pm10_band_name)
@@ -381,13 +387,16 @@ def computing_pm_10(
         import_gtiff(aod_file, aod_band_name)
         _max2, _min2 = get_ranges(aod_band_name)
         # Export Gtiff
-        p_dir = f"{prediction_dir}{p_file}/"
-        if not os.path.exists(p_dir):
-            os.mkdir(p_dir)
+        pm10_dir = f"{prediction_dir_path}{pm10_file_path}/"
+        if not os.path.exists(pm10_dir):
+            os.mkdir(pm10_dir)
 
         refresh_region()
         export_multiband_gtiff(
-            [pm10_band_name, aod_band_name], p_file, f"{p_dir}{p_file}", NODATA
+            [pm10_band_name, aod_band_name],
+            pm10_file_path,
+            f"{pm10_dir}{pm10_file_path}",
+            NODATA,
         )
         # Create XML
         maiac_files = [
@@ -401,7 +410,7 @@ def computing_pm_10(
             zip(
                 DAILY_PM10_METADATA_CODES.values(),
                 [
-                    p_file,
+                    pm10_file_path,
                     creation_date,
                     _max,
                     _min,
@@ -413,11 +422,11 @@ def computing_pm_10(
                 ],
             )
         )
-        create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{p_dir}{p_file}")
+        create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{pm10_dir}{pm10_file_path}")
         # Export PNG
-        raster2png(pm10_band_name, f"{p_dir}{p_file}")
+        raster2png(pm10_band_name, f"{pm10_dir}{pm10_file_path}")
         # Zip directory with all product
-        zip_directory(p_dir, p_dir)
+        zip_directory(pm10_dir, pm10_dir)
     return creation_date, log_prediction, min_date
 
 
@@ -455,7 +464,7 @@ def process_merra_data(date: str, modis_outputs: List[Any], processed_dir: str) 
 
 
 def process_modis_data(
-    current_maiac_path: str, date: str, processed_dir: str, total_cells: int
+    current_maiac_path: str, date: str, processed_dir_path: str, total_cells: int
 ) -> List[Any]:
     get_modis_files(
         MAIAC_PRODUCT,
@@ -467,7 +476,7 @@ def process_modis_data(
     modis_outputs = []  # type: ignore
     for band, prefix in MAIAC_BANDS.items():
         modis_outputs = get_modis_mosaic(
-            current_maiac_path, band, prefix, processed_dir
+            current_maiac_path, band, prefix, processed_dir_path
         )
         # Import to GRASS to reproject and rescale
         orbits_to_clean = []
@@ -496,7 +505,7 @@ def process_modis_data(
                 continue
 
             logger.info(f"The current file {rname} will be processed")
-            rofile = f"{processed_dir}{rname}"
+            rofile = f"{processed_dir_path}{rname}"
             raster2gtiff(rname, rofile)
 
         for modis_orbit in orbits_to_clean:
@@ -534,7 +543,7 @@ def get_total_cells(result: Dict) -> int:
 
 def monthly_pipeline(ndays: int) -> None:
     """
-    Compute the following monthly statisticians:
+    Compute the following monthly statistics:
         Mean
         Standar Desviation
         N
