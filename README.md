@@ -126,9 +126,9 @@ $ docker exec -it <container_name> empatia compute_daily_products > $HOME/conae.
 To run the model in your own working station or server, you should obtain the model file from the next FTP access:
 
 ```
-FTP: ftp4.conae.gov.ar/prod11/
-username: daye
-password: dE#2810
+FTP: ftp4.conae.gov.ar
+username: prod11
+password: aB8AOQKZ
 ```
 
 Download the `model_2021-05-13.pkl` file and save it into the `./data/model/` directory.
