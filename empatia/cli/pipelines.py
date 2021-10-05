@@ -4,10 +4,11 @@ import itertools
 import json
 import math
 import os
+
 from collections import defaultdict
+from pyspatialml import Raster
 from typing import Any, DefaultDict, Dict, List, Tuple
 
-from pyspatialml import Raster
 
 from empatia.etl.merra_data_source import get_merra_files
 from empatia.etl.modis_data_source import get_modis_files
@@ -352,7 +353,8 @@ def computing_ica(
             ],
         )
     )
-    create_xml(ICA_TEMPLATE_PATH, metadata, f"{ica_dir}{ica_file}")
+    # Uncomment to use metadata
+    # create_xml(ICA_TEMPLATE_PATH, metadata, f"{ica_dir}{ica_file}")
     # Export PNG
     raster2png(rname, f"{ica_dir}{ica_file}")
     # Zip directory with all product
@@ -430,7 +432,8 @@ def computing_pm_10(
                 ],
             )
         )
-        create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{pm10_dir}{pm10_file_path}")
+        # Uncomment to use metadata
+        # create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{pm10_dir}{pm10_file_path}")
         # Export PNG
         raster2png(pm10_band_name, f"{pm10_dir}{pm10_file_path}")
         # Zip directory with all product
@@ -661,7 +664,8 @@ def monthly_pipeline(ndays: int) -> None:
         export_multiband_gtiff(group, group_name, f"{output_dir}/{group_name}", NODATA)
 
         # Export XML
-        create_xml(xml_template, metadata, f"{output_dir}/{group_name}")
+        # Uncomment to use metadata
+        # create_xml(xml_template, metadata, f"{output_dir}/{group_name}")
 
         # Export PNG only PM10 monthly mean
         rname = f"PM10_media_{sensor}"
