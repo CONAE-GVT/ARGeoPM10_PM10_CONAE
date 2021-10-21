@@ -146,7 +146,7 @@
 								<gco:CharacterString>Índice de calidad del aire diario derivado de PM10 - ARGeoPM10</gco:CharacterString>
 							</cit:name>
 							<cit:issueIdentification>
-								<gco:CharacterString>ICAPM10 -ARGeoPM10</gco:CharacterString>
+								<gco:CharacterString>ICAPM10-ARGeoPM10</gco:CharacterString>
 							</cit:issueIdentification>
 							<cit:page>
 								<gco:CharacterString><!--mdb:ii_MD_DI-ci_c-s-CI_s-p--></gco:CharacterString>
@@ -641,7 +641,7 @@
 							<cit:party>
 								<cit:CI_Organisation>
 									<cit:name>
-										<gco:CharacterString>CONAE - SSU</gco:CharacterString>
+										<gco:CharacterString>CONAE - Subgerencia de Servicios al Usuario</gco:CharacterString>
 									</cit:name>
 									<cit:individual>
 										<cit:CI_Individual>

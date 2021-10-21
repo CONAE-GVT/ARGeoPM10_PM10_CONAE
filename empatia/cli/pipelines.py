@@ -340,7 +340,7 @@ def computing_ica(
                 _min,
                 _max,
                 _min,
-                ",".join(products),
+                ", ".join(products),
             ],
         )
     )
@@ -416,8 +416,8 @@ def computing_pm_10(
                     _min,
                     _max2,
                     _min2,
-                    ",".join(maiac_files),
-                    ",".join(merra_files),
+                    ", ".join(maiac_files),
+                    ", ".join(merra_files),
                     XML_VIIRS_NAME.format(min_date.year),
                 ],
             )
@@ -626,7 +626,7 @@ def monthly_pipeline(ndays: int) -> None:
                     _min2,
                     _max3,
                     _min3,
-                    ",".join(products),
+                    ", ".join(products),
                 ],
             )
         )
