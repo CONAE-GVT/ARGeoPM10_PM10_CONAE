@@ -27,7 +27,7 @@ def get_data(
         writer(response.content)
         logger.info(f"Contents of {response.url} written to {writer.destination}")
     except FileExists:
-        logger.error("Dataset already exists")
+        logger.info("Dataset already exists")
     except HTTPError as e:
         logger.error("Data was not downloaded", exc_info=e)
         raise HTTPError

@@ -75,9 +75,11 @@ def get_modis_files(
     west: float,
     start_date: str,
     end_date: str = None,
-) -> None:
+) -> bool:
     """
     Download Modis products
+    Return True if there are files to be processed
+           False otherwise
     """
 
     headers = {"Authorization": f"Bearer {NASA_TOKEN}"}
@@ -87,9 +89,13 @@ def get_modis_files(
     fnames, urls = get_modis_urls(
         product, collection, north, south, east, west, start_date, end_date
     )
+    if not fnames:
+        logger.info(f"NO files found out for the dates: {start_date}-{end_date}")
+        return False
     logger.info(f"Downloading MODIS's files for: {product}")
     for fn, url in zip(fnames, urls):
         fn_splitted = fn.split(".")
         fn = ".".join(fn_splitted[:-1])
         file_format = fn_splitted[-1]
         get_data(url, f"{dst_path}{fn}", file_format, headers=headers)
+    return True

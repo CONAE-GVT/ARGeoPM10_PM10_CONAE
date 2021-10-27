@@ -103,7 +103,7 @@ $ touch .netrc
 ```
 
 ```
-$ echo "machine urs.earthdata.nasa.gov login <uid> password <password> >> .netrc"
+$ echo "machine urs.earthdata.nasa.gov login <uid> password <password>" >> .netrc
 ```
 where `<uid>` is your user name and `<password>` is your Earthdata Login password without the brackets.
 
@@ -186,6 +186,10 @@ This file looks like:
     100 255:255:192
     125 253:174:97
     150 215:25:28
+    175 215:25:170
+    200 117:25:215
+    225 75:0:130
+    250 0:0:0
 ```
 where the first column is the PM10 value and the second column is the RGB color.
 

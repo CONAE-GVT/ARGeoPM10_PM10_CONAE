@@ -122,12 +122,13 @@ def viirs_etl() -> None:
     for ds in ds_to_download:
         try:
             logger.info(f"Date: {ds}")
-            get_modis_files(
+            if not get_modis_files(
                 VIIRS_PRODUCT,
                 VIIRS_COLLECTION,
                 start_date=ds,
                 **MODIS_REGION,  # type: ignore
-            )
+            ):
+                continue
 
             outname = f"viirs_{ds}"
             current_viirs_path = f"{MODIS_DATASET_PATH}/{VIIRS_PRODUCT}/{ds}/"
@@ -245,6 +246,8 @@ def daily_pipeline() -> None:
             modis_outputs = process_modis_data(
                 current_maiac_path, date, processed_dir_path, total_cells
             )
+            if not modis_outputs:
+                continue
 
             logger.info("Downloading MERRA data...")
             process_merra_data(date, modis_outputs, processed_dir_path)
@@ -466,12 +469,13 @@ def process_merra_data(date: str, modis_outputs: List[Any], processed_dir: str) 
 def process_modis_data(
     current_maiac_path: str, date: str, processed_dir_path: str, total_cells: int
 ) -> List[Any]:
-    get_modis_files(
+    if not get_modis_files(
         MAIAC_PRODUCT,
         MAIAC_COLLECTION,
         start_date=date,
         **MODIS_REGION,  # type: ignore
-    )
+    ):
+        return []
     null_files = []  # type: ignore
     modis_outputs = []  # type: ignore
     for band, prefix in MAIAC_BANDS.items():
@@ -534,7 +538,6 @@ def get_dates_to_download(log_file: str, today: dt.datetime) -> List[str]:
 
 
 def get_total_cells(result: Dict) -> int:
-    logger.info(f"RESULT-MASK: {result}")
     cells_data = [k for k in result if k.startswith("cells")][0]
     total_cells = int(cells_data.replace(" ", "")[6:])
     logger.info(f"Total cells in Argentina: {total_cells}")
