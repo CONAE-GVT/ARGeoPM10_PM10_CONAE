@@ -109,16 +109,37 @@ where `<uid>` is your user name and `<password>` is your Earthdata Login passwor
 
 ```
 chmod 0600 .netrc
-
 ```
 
-- Run daily_pipeline in container
+
+##pipelines
+
+#### Run daily_pipeline in container
 ```
-cd $HOME
-touch conae.logs
-$ docker exec -it <container_name> empatia compute_daily_products > $HOME/conae.logs
+$ docker exec -it empatia_container empatia compute_daily_products > $HOME/daily_logs.txt
+```
+#### Run daily_pipeline in container for specific date. Set flag --start-date=YYYY-MM-DD.
+```
+$ docker exec -it empatia_container empatia compute_daily_products --start-date=2021-07-01 > $HOME/daily_logs.txt
 ```
 
+#### Run daily_pipeline in container with a range of dates: Set flags --start-date=YYYY-MM-DD, --end-date=YYYY-MM-DD
+```
+$ docker exec -it empatia_container empatia compute_daily_products --start-date=2021-07-01 --end-date=2021-07-31 > $HOME/daily_logs.txt
+```
+
+
+#### Run monthly_pipeline in container for last complete month. Previously, run daily_pipeline for each monthly day.
+```
+$ docker exec -it empatia_container empatia compute_monthly_products > $HOME/monthly_logs.txt
+```
+
+####  Run monthly_pipeline in container for the calendar/s month/s included in the last ndays. Min ndays=30 (to run a 30-day month ending today). Max ndays=5000 (to run many months). Previously, run daily_pipeline for each monthly day.
+```
+$ docker exec -it empatia_container empatia compute_monthly_products --ndays=31 > $HOME/monthly_logs.txt
+```
+
+Please, consider pubblishing delays for each input data (i.e. daily MCD19A2, monthly MERRA-2 files)
 
 
 ## Get the model file
