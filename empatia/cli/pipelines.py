@@ -207,7 +207,7 @@ def predict(model: Any, rfiles: List, outname: str) -> None:
     _ = prediction.write(file_path=f"{outname}.tif", nodata=NODATA)
 
 
-def daily_pipeline() -> None:
+def daily_pipeline(start_date: str = None, end_date: str = None) -> None:
     """
     Compute the following daily products:
         PM10 per sensor orbit
@@ -216,7 +216,12 @@ def daily_pipeline() -> None:
     estimator = PM10Estimator.load_model(MODEL_PATH)
     log_file = f"{PROCESSED_DATA_PATH}/log.txt"
     today = dt.datetime.today()
-    dates_to_download = get_dates_to_download(log_file, today)
+
+    dates_to_download = (
+        get_dates_to_download_for_a_range(start_date, end_date)
+        if start_date
+        else get_dates_to_download(log_file, today)
+    )
 
     logger.info("Get VIIRS data")
     viirs_file_path = get_viirs_dataset_path(today.year)
@@ -515,6 +520,20 @@ def process_modis_data(
         for modis_orbit in orbits_to_clean:
             modis_outputs.remove(modis_orbit)
     return modis_outputs
+
+
+def get_dates_to_download_for_a_range(
+    start_date: str, end_date: str = None
+) -> List[str]:
+    if not end_date:
+        return [start_date]
+    date_format = "%Y-%m-%d"
+    start_date_dt = dt.datetime.strptime(start_date, date_format)
+    end_date_dt = dt.datetime.strptime(end_date, date_format)
+    return [
+        (start_date_dt + dt.timedelta(days=days)).strftime(date_format)
+        for days in range((end_date_dt - start_date_dt).days + 1)
+    ]
 
 
 def get_dates_to_download(log_file: str, today: dt.datetime) -> List[str]:

@@ -30,8 +30,10 @@ def run_viirs_etl() -> None:
 
 
 @main.command(name="compute_daily_products")
-def compute_daily_products() -> None:
-    daily_pipeline()
+@click.option("--start-date", "start_date", type=str)
+@click.option("--end-date", "end_date", type=str)
+def compute_daily_products(start_date: str, end_date: str) -> None:
+    daily_pipeline(start_date, end_date)
 
 
 @main.command(name="compute_monthly_products")
@@ -59,4 +61,3 @@ def clean_all(ndays: int) -> None:
 @main.command(name="run_training")
 def run_training() -> None:
     train()
-
