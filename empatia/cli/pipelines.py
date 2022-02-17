@@ -56,6 +56,7 @@ from empatia.utils import (
     create_xml,
     date_range,
     get_qa_class,
+    remove_file,
     remove_folders_from_date,
     zip_directory,
 )
@@ -355,6 +356,8 @@ def computing_ica(
     create_xml(ICA_TEMPLATE_PATH, metadata, f"{ica_dir}{ica_file}")
     # Export PNG
     raster2png(rname, f"{ica_dir}{ica_file}")
+    # Remove aux.xml temporary files
+    remove_file(f"{ica_dir}/{ica_file}.aux.xml")
     # Zip directory with all product
     zip_directory(ica_dir, ica_dir)
     with open(f"{prediction_dir_path}/log.txt", "w") as outfile:
@@ -433,6 +436,8 @@ def computing_pm_10(
         create_xml(DAILY_PM10_TEMPLATE_PATH, metadata, f"{pm10_dir}{pm10_file_path}")
         # Export PNG
         raster2png(pm10_band_name, f"{pm10_dir}{pm10_file_path}")
+        # Remove aux.xml temporary files
+        remove_file(f"{pm10_dir}/{pm10_file_path}.aux.xml")
         # Zip directory with all product
         zip_directory(pm10_dir, pm10_dir)
     return creation_date, log_prediction, min_date
@@ -667,6 +672,9 @@ def monthly_pipeline(ndays: int) -> None:
         rname = f"PM10_media_{sensor}"
         reset_color_table(rname, PM10_COLOR_RULES_PATH)
         raster2png(rname, f"{output_dir}/{group_name}")
+
+        # Remove aux.xml temporary files
+        remove_file(f"{output_dir}/{group_name}.aux.xml")
 
         # Zip directory with all product
         zip_directory(output_dir, output_dir)

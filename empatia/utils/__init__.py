@@ -67,3 +67,11 @@ def remove_folders_from_date(pattern: str, ds: dt.date) -> None:
         path_ds = dt.datetime.strptime(path.split("/")[-1], DEFAULT_DATE_FORMAT)
         if path_ds < ds:
             remove_folder(path)
+
+
+def remove_file(path: str) -> None:
+    if os.path.exists(path):
+        os.remove(path)
+        print(f"Deleted file: {path}")
+    else:
+        print(f"No {path} file to delete")
